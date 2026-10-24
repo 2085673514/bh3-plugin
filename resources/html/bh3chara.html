@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3女武神列表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+  }
+  #container {
+    width: {{width}}px;
+    padding: 24px 26px 30px;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+  }
+  .copyright { display: none; }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .banner {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap {
+    position: relative;
+    display: flex; align-items: center; gap: 22px;
+    padding: 24px 30px;
+  }
+  .avatar {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.75);
+    background: rgba(255,255,255,.12);
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  .header .info { flex: 1; min-width: 0; }
+  .nickname {
+    font-size: 28px; font-weight: 800; letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .badge {
+    font-size: 13px; padding: 4px 12px; border-radius: 999px;
+    background: rgba(0,192,255,.16);
+    border: 1px solid rgba(0,192,255,.45);
+    color: #9fe4ff;
+  }
+  .badge.level { background: rgba(255,216,138,.16); border-color: rgba(255,216,138,.55); color: #ffd88a; }
+  .badge.uid { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: #c9d6e8; font-variant-numeric: tabular-nums; }
+
+  /* 角色网格 */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat({{columns}}, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .chara {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .chara .avatar-box {
+    position: relative;
+    height: 130px;
+    background: #1a2c46;
+  }
+  .chara .avatar-box .bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: .6;
+  }
+  .chara .avatar-box .icon {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center 30%;
+  }
+  .chara .avatar-box .rank {
+    position: absolute; top: 7px; left: 7px;
+    font-size: 14px; font-weight: 800; font-style: italic;
+    padding: 1px 9px; border-radius: 6px;
+    color: #0b1220;
+  }
+  .chara .avatar-box .rank.rank-1 { background: #9aa6b8; }
+  .chara .avatar-box .rank.rank-2 { background: #8ec9e0; }
+  .chara .avatar-box .rank.rank-3 { background: #c98ae8; }
+  .chara .avatar-box .rank.rank-4 { background: #ffd88a; }
+  .chara .avatar-box .rank.rank-5 { background: linear-gradient(135deg, #ffe9b0, #ffb84d); }
+  .chara .avatar-box .lv {
+    position: absolute; right: 7px; bottom: 7px;
+    font-size: 12px; font-weight: 700;
+    background: rgba(11,18,32,.75);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 1px 7px; border-radius: 6px;
+  }
+  .chara .name {
+    font-size: 14px; font-weight: 700; text-align: center;
+    line-height: 20px;
+    padding: 8px 8px 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .chara .equip { padding: 8px 10px 10px; }
+  .chara .equip .item { display: flex; align-items: center; gap: 8px; }
+  .chara .equip .item + .item { margin-top: 6px; }
+  .chara .equip .item .frame {
+    width: 46px; height: 46px; flex: none;
+    border-radius: 8px; padding: 3px;
+  }
+  .chara .equip .item .frame.r0 { background: rgba(255,255,255,.08); }
+  .chara .equip .item .frame.r3 { background: linear-gradient(135deg, #4d7cb0, #2d5a8f); }
+  .chara .equip .item .frame.r4 { background: linear-gradient(135deg, #a05fd0, #7a3fae); }
+  .chara .equip .item .frame.r5 { background: linear-gradient(135deg, #ffd88a, #e8a33c); }
+  .chara .equip .item .frame img {
+    width: 100%; height: 100%;
+    border-radius: 6px; object-fit: cover;
+    background: rgba(11,18,32,.6);
+  }
+  .chara .equip .item .meta { min-width: 0; flex: 1; }
+  .chara .equip .item .meta .n {
+    font-size: 12px; color: #c9d6e8; line-height: 16px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .chara .equip .item .meta .s { font-size: 12px; color: #ffd88a; letter-spacing: 1px; line-height: 15px; margin-top: 1px; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 15px; padding: 60px 0; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, #container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .header .banner { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; }
+  .nickname { color: #8e2f68 !important; text-shadow: 0 1px 3px rgba(255,255,255,0.85) !important; }
+  .badge { background: rgba(214,77,148,0.12) !important; border-color: rgba(214,77,148,0.45) !important; color: #a13570 !important; }
+  .badge.level { background: rgba(142,47,104,0.12) !important; border-color: rgba(142,47,104,0.5) !important; color: #8e2f68 !important; }
+  .badge.uid { background: rgba(255,255,255,0.5) !important; border-color: rgba(214,77,148,0.3) !important; color: #7a4a9e !important; }
+  .chara {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.35) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .chara .avatar-box { background: #f0d8ee !important; }
+  .chara .avatar-box .lv { background: rgba(255,255,255,0.72) !important; border-color: rgba(214,77,148,0.35) !important; color: #8e2f68 !important; }
+  .chara .name { color: #57204a !important; }
+  .chara .equip .item .meta .n { color: #7a4a9e !important; }
+  .chara .equip .item .meta .s { color: #b23ac4 !important; }
+  .empty { color: #7a4a9e !important; }
+</style>
+</head>
+<body {{if sys}}{{sys.scale}}{{/if}}>
+<div id="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="banner"></div>
+    <div class="wrap">
+      <img class="avatar" src="{{avatarUrl}}" alt="头像">
+      <div class="info">
+        <div class="nickname">{{nickname}}</div>
+        <div class="badges">
+          <span class="badge level">Lv.{{level}}</span>
+          <span class="badge">{{serverName}}服</span>
+          <span class="badge uid">UID: {{uid}}</span>
+          <span class="badge">装甲 {{armorNum}} / SSS {{sssNum}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 女武神列表 -->
+  {{if chars.length}}
+  <div class="grid">
+    {{each chars c}}
+    <div class="chara">
+      <div class="avatar-box">
+        <div class="bg" style="background-image:url('{{c.bg}}')"></div>
+        <div class="icon" style="background-image:url('{{c.icon}}')"></div>
+        <span class="rank {{c.rankClass}}">{{c.rank}}</span>
+        <span class="lv">Lv.{{c.level}}</span>
+      </div>
+      <div class="name">{{c.name}}</div>
+      <div class="equip">
+        <div class="item">
+          <div class="frame r{{c.weapon.maxRarity}}"><img src="{{c.weapon.icon}}" alt=""></div>
+          <div class="meta">
+            <div class="n">{{c.weapon.name}}</div>
+            <div class="s">{{c.weapon.stars}}</div>
+          </div>
+        </div>
+        {{each c.stigmas s}}
+        <div class="item">
+          <div class="frame r{{s.maxRarity}}"><img src="{{s.icon}}" alt=""></div>
+          <div class="meta">
+            <div class="n">{{s.name}}</div>
+            <div class="s">{{s.stars}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  <div class="empty">暂无女武神数据</div>
+  {{/if}}
+
+</div>
+</body>
+</html>

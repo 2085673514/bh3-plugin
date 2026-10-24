@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3一周成绩单</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 620px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; flex: 1; display: flex; flex-direction: column; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap { position: relative; display: flex; align-items: center; gap: 18px; padding: 20px 26px; }
+  .avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.75);
+    background: rgba(255,255,255,.12); object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45); flex: none;
+  }
+  .header .info { flex: 1; min-width: 0; }
+  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .badge {
+    font-size: 12px; padding: 3px 11px; border-radius: 999px;
+    background: rgba(0,192,255,.16); border: 1px solid rgba(0,192,255,.45); color: #9fe4ff;
+  }
+  .badge.level { background: rgba(255,216,138,.16); border-color: rgba(255,216,138,.55); color: #ffd88a; }
+  .badge.uid { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: #c9d6e8; font-variant-numeric: tabular-nums; }
+
+  /* 周记录 */
+  .week { margin-top: 12px; }
+  .week-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: #ffd88a; margin-bottom: 10px;
+  }
+  .week-head::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.35), transparent); }
+  .week-main { display: flex; gap: 14px; }
+  .fav {
+    position: relative; width: 190px; height: 150px; flex: none;
+    border-radius: 10px; overflow: hidden;
+    background: linear-gradient(135deg, #1c2e4d, #24406b);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .fav img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+  .fav .fav-name {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 6px 10px; font-size: 14px; font-weight: 700;
+    background: linear-gradient(0deg, rgba(0,0,0,.72), transparent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .fav .fav-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #9fb2c9; font-size: 13px; }
+  .week-stats { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; }
+  .ws {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 9px; padding: 7px 8px;
+  }
+  .ws b { display: block; font-size: 16px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; }
+  .ws span { display: block; font-size: 11px; color: #9fb2c9; margin-top: 2px; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
+  .footer-tip { margin-top: 16px; text-align: center; font-size: 13px; color: #9fb2c9; letter-spacing: 1px; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, #container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .card, .ws, .fav {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.4) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .nickname, .sec-title, .week-head { color: #8e2f68 !important; }
+  .sec-title::after, .week-head::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
+  .sec-title i { background: #d64d94 !important; }
+  .badge { background: rgba(214,77,148,0.12) !important; border-color: rgba(214,77,148,0.45) !important; color: #a13570 !important; }
+  .badge.level { background: rgba(142,47,104,0.12) !important; border-color: rgba(142,47,104,0.5) !important; color: #8e2f68 !important; }
+  .badge.uid { background: rgba(255,255,255,0.5) !important; border-color: rgba(214,77,148,0.3) !important; color: #7a4a9e !important; }
+  .empty, .footer-tip, .fav-empty, .ws span { color: #7a4a9e !important; }
+  .ws b { color: #b23ac4 !important; }
+</style>
+</head>
+<body {{if sys}}{{sys.scale}}{{/if}}>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="wrap">
+      <img class="avatar" src="{{avatarUrl}}" alt="头像">
+      <div class="info">
+        <div class="nickname">{{nickname}}</div>
+        <div class="badges">
+          <span class="badge level">Lv.{{level}}</span>
+          <span class="badge">{{serverName}}服</span>
+          <span class="badge uid">UID: {{uid}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 一周成绩单 -->
+  <div class="card">
+    <div class="sec-title"><i></i>一周成绩单 · 历史</div>
+    {{if weeks.length}}
+    {{each weeks w}}
+    <div class="week">
+      <div class="week-head">{{w.range}}</div>
+      <div class="week-main">
+        <div class="fav">
+          {{if w.favImg}}
+          <img src="{{w.favImg}}" alt="{{w.favName}}">
+          {{if w.favName}}<div class="fav-name">{{w.favName}}</div>{{/if}}
+          {{else}}
+          <div class="fav-empty">暂无最爱角色</div>
+          {{/if}}
+        </div>
+        <div class="week-stats">
+          <div class="ws"><b>{{w.activeDays}}</b><span>活跃天数</span></div>
+          <div class="ws"><b>{{w.onlineHours}}</b><span>在线时长(时)</span></div>
+          <div class="ws"><b>{{w.stamina}}</b><span>消耗体力</span></div>
+          <div class="ws"><b>{{w.goldIncome}}</b><span>金币收入</span></div>
+          <div class="ws"><b>{{w.goldExpenditure}}</b><span>金币支出</span></div>
+          <div class="ws"><b>{{w.mainLinePct}}%</b><span>主线体力占比</span></div>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">暂无一周成绩单数据</div>
+    {{/if}}
+  </div>
+
+  <div class="footer-tip">{{footer}}</div>
+
+</div>
+</body>
+</html>

@@ -23,8 +23,35 @@ import {
   setBindUid,
   setCookie,
 } from '../lib/store.js'
+import { CookieMgr } from '../lib/mys/cookie.js'
+import { Bh3, InfoError, id2server, server2id } from '../lib/mys/api.js'
+import {
+  buildAbyssCard as buildMysAbyssCard,
+  buildBattleCard as buildMysBattleCard,
+  buildCharaCard as buildMysCharaCard,
+  buildFinanceCard,
+  buildGachaCard,
+  buildIndexCard,
+  buildNoteCard,
+  buildRecordCard,
+  buildReportCard,
+  buildWeeklyCard,
+  extractReportHistory,
+} from '../lib/mys/card.js'
+import { getReports, saveReports } from '../lib/mys/store.js'
+import { SelfHelp, genAuthKey, getStokenByLtuid } from '../lib/mys/selfhelp.js'
+import { collectRecords, updateRecords } from '../lib/mys/record.js'
+import { renderMysTemplate, DEVICE_SCALE } from '../lib/mys/render.js'
 
-const PREFIX = '#?(崩坏3|崩三|bbb)'
+const PREFIX = '#?(崩坏3|崩三|bbb|bh3)'
+
+/** 从消息中剥离前缀与关键词，保留剩余参数(用于 honkai-mys 移植指令) */
+function stripMysKeyword(msg = '', keyword = '') {
+  return String(msg)
+    .replace(new RegExp(`^${PREFIX}`), '')
+    .replace(new RegExp(`^${keyword}`), '')
+    .trim()
+}
 
 const ATTRIBUTE_MAP = {
   1: '生物',
@@ -357,21 +384,38 @@ function buildHelp() {
     '【战绩查询】（主人配置一次公共 Cookie，群友只凭 UID 即可查询）',
     '#崩坏3cookie <完整Cookie>　　主人配置公共 Cookie',
     '#崩坏3cookie <UID> <Cookie>　为指定 UID 配置专用 Cookie',
-    '#崩坏3绑定 <UID> / #崩坏3切换 <UID>　绑定或切换查询 UID',
+    '#崩坏3绑定 / #崩坏3绑定 <UID>　按 Cookie 账号自动绑定 / 手动指定 UID',
+    '#崩坏3切换 <UID>　　　　　　切换查询 UID',
     '#崩坏3当前　　　　　　　　　查看当前 UID',
     '#崩坏3解绑　　　　　　　　　解除绑定',
+    '（已 #绑定Cookie 时可不绑定 UID，直接查询将自动使用 Cookie 账号）',
     '',
     '#崩坏3面板　　总览（等级/收藏/深渊/战场）',
-    '#崩坏3便笺　　体力/训练值/活动奖励',
-    '#崩坏3角色 [角色名]　　　　角色头像列表 / 单个角色面板',
+    '#崩坏3体力 / #崩坏3便笺　实时便签卡片（体力/训练/深渊/战场/乐土）',
+    '#崩坏3角色　　　　　　　拥有的女武神列表（Cookie 账号）',
+    '#崩坏3角色 <角色名>　　　角色面板（大头像/装备/六维）',
+    '#崩坏3角色列表　　　　　110 名女武神清单',
     '#崩坏3深渊　　超弦空间战绩',
     '#崩坏3战场　　记忆战场战绩',
     '#崩坏3逐光　　往世乐土战绩',
     '（以上命令默认查询绑定的 UID，也可临时加 UID：如 #崩坏3面板 100000001）',
     '',
+    '【玩家卡片 / 战报 / 手账】（触发头亦可用 #bh3）',
+    '#崩坏3 [uid]　　　　　　玩家卡片（服务器可省略，自动识别）',
+    '#崩坏3战报　　　　　　　舰长战报（成绩单/深渊/战场）',
+    '#崩坏3深渊战报 / #崩坏3战场战报　更多近期战报（含本地历史）',
+    '#崩坏3一周成绩单　　　　一周成绩单（含本地历史）',
+    '#崩坏3手帐　　　　　　　水晶手账（需绑定 Cookie）',
+    '',
+    '【补给 / 道具记录】（米游社自助查询，需逍遥插件 stoken）',
+    '#崩坏3更新抽卡记录 / #崩坏3刷新补给记录　更新并保存补给记录',
+    '#崩坏3抽卡记录 [角色|装备|家园]　　查看补给记录',
+    '#崩坏3抽卡统计　　　　　抽卡统计（S 级/5 星）',
+    '#崩坏3更新道具记录 / #崩坏3道具记录　更新并查看道具记录',
+    '',
     '【角色数据】（内置 110 名女武神数据库，支持别名）',
     '#崩坏3角色图 <名字/别名>　　角色立绘 + 背景图 + 角色档案',
-    '#崩坏3角色 <UID> <角色名>　角色面板（大头像/装备/六维，仿喵喵风格）',
+    '#崩坏3角色 <角色名>　　　　角色面板（大头像/装备/六维，仿喵喵风格）',
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  例：#崩坏3伤害 炎律 300 20 100 200',
     '',
@@ -400,7 +444,7 @@ export class Bh3Plugin extends plugin {
       rule: [
         { reg: `^${PREFIX}(帮助|菜单|使用)$`, fnc: 'help' },
         { reg: `^${PREFIX}帮助文本$`, fnc: 'helpText' },
-        { reg: `^${PREFIX}绑定\\s*$`, fnc: 'help' },
+        { reg: `^${PREFIX}绑定\\s*$`, fnc: 'bindCurrent' },
         { reg: `^${PREFIX}绑定\\s+(\\d{5,12})$`, fnc: 'bindUid' },
         { reg: `^${PREFIX}(切换|切换uid|切换UID)\\s+(\\d{5,12})$`, fnc: 'switchUid' },
         { reg: `^${PREFIX}(当前|当前uid|当前UID|我的uid|查看uid)\\s*$`, fnc: 'showCurrentUid' },
@@ -413,11 +457,26 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchByType' },
         { reg: `^${PREFIX}(图鉴|查询|wiki)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchCommand' },
         { reg: `^${PREFIX}(面板|总览|我的|主页)(\\s+(\\d{5,12}))?$`, fnc: 'showIndex' },
+        // ===== honkai-mys 移植指令(需在校验最宽泛的 #崩坏3 之前) =====
+        { reg: `^${PREFIX}(体力|便签|便笺|实时便签|实时便笺)(?=$|@|[\\s\\d])`, fnc: 'mysNote', log: false },
         { reg: `^${PREFIX}(便笺|体力)(\\s+(\\d{5,12}))?$`, fnc: 'showNote' },
+        { reg: `^${PREFIX}角色(?=$|@|[\\s]+\\d{6,10})`, fnc: 'mysChara', log: false },
+        { reg: `^${PREFIX}(深渊战报|战场战报)(?=$|[\\s\\d])`, fnc: 'mysBranchReport', log: false },
+        { reg: `^${PREFIX}(一周成绩单|成绩单)(?=$|[\\s\\d])`, fnc: 'mysWeekly', log: false },
+        { reg: `^${PREFIX}(舰长战报|战报)(?=$|[\\s\\d])`, fnc: 'mysReport', log: false },
+        { reg: `^${PREFIX}(手帐|手账)(?=$|[\\s\\d])`, fnc: 'mysFinance', log: false },
+        { reg: `^${PREFIX}(更新|刷新)(抽卡|补给)记录`, fnc: 'mysUpdateGacha', log: false },
+        { reg: `^${PREFIX}(更新|刷新)道具记录`, fnc: 'mysUpdateMaterial', log: false },
+        { reg: `^${PREFIX}(抽卡记录|补给记录)`, fnc: 'mysGacha', log: false },
+        { reg: `^${PREFIX}(抽卡|补给)统计`, fnc: 'mysGachaStat', log: false },
+        { reg: `^${PREFIX}道具记录`, fnc: 'mysMaterial', log: false },
+        // ===== 原有宽泛指令 =====
         { reg: `^${PREFIX}角色(\\s+(\\d{5,12}))?(\\s+([\\s\\S]+))?$`, fnc: 'showCharacters' },
         { reg: `^${PREFIX}(深渊|超弦)(\\s+(\\d{5,12}))?$`, fnc: 'showAbyss' },
         { reg: `^${PREFIX}(战场|记忆战场)(\\s+(\\d{5,12}))?$`, fnc: 'showBattleField' },
         { reg: `^${PREFIX}(逐光)(\\s+(\\d{5,12}))?$`, fnc: 'showGodWar' },
+        // 校验最宽泛的 #崩坏3 / #bh3(玩家卡片)，必须放在最后
+        { reg: `^${PREFIX}(?=$|[\\s\\d]|[mM][yY][sS]|米游社)`, fnc: 'mysCard', log: false },
       ],
     })
   }
@@ -461,6 +520,17 @@ export class Bh3Plugin extends plugin {
     return e.reply(`已绑定崩坏3 UID：${uid}（可通过 #崩坏3面板 查询）`)
   }
 
+  /** #崩坏3绑定(不带 UID): 使用米游社 Cookie 账号自动绑定(honkai-mys 绑定方式) */
+  async bindCurrent(e) {
+    const auto = await this.resolveCookieRole(e)
+    if (!auto?.uid) {
+      return e.reply('未在绑定的 Cookie 中找到崩坏3角色。\n请先发送 #绑定Cookie 登录米游社账号，再发送 #崩坏3绑定；或使用 #崩坏3绑定 <UID> 手动绑定。')
+    }
+    setBindUid(e.user_id, auto.uid)
+    const server = auto.server ? `（服务器 ${auto.server}）` : ''
+    return e.reply(`已根据米游社 Cookie 账号自动绑定崩坏3 UID：${auto.uid}${server}\n之后可直接发送 #崩坏3面板 查询。`)
+  }
+
   async unbindUid(e) {
     removeBindUid(e.user_id)
     return e.reply('已解除崩坏3 UID 绑定。')
@@ -478,10 +548,15 @@ export class Bh3Plugin extends plugin {
 
   async showCurrentUid(e) {
     const uid = getBindUid(e.user_id)
-    if (!uid) {
-      return e.reply('尚未绑定 UID。发送 #崩坏3绑定 <UID> 或 #崩坏3切换 <UID> 绑定。')
+    if (uid) {
+      return e.reply(`当前绑定的崩坏3 UID：${uid}（发送 #崩坏3切换 <新UID> 可切换）`)
     }
-    return e.reply(`当前绑定的崩坏3 UID：${uid}（发送 #崩坏3切换 <新UID> 可切换）`)
+    // 未手动绑定: 尝试使用米游社 Cookie 账号(与 honkai-mys 一致)
+    const auto = await this.resolveCookieRole(e)
+    if (auto?.uid) {
+      return e.reply(`当前未手动绑定 UID，查询将自动使用 Cookie 账号：${auto.uid}（发送 #崩坏3绑定 <UID> 可手动指定）`)
+    }
+    return e.reply('尚未绑定 UID。发送 #崩坏3绑定 <UID> 绑定，或先通过 #绑定Cookie 登录米游社账号后再查询。')
   }
 
   async setCookie(e) {
@@ -507,14 +582,59 @@ export class Bh3Plugin extends plugin {
     }
   }
 
-  async withUid(e, action, explicitUid = '') {
-    const uid = explicitUid || getBindUid(e.user_id)
-    if (!uid) {
-      return e.reply('请提供 UID 或先使用 #崩坏3绑定 <UID> 绑定你的游戏 UID。')
+  /**
+   * 通过米游社 Cookie 账号解析崩坏3角色(与 honkai-mys 的绑定方式一致)
+   * 使用 yunzai 已绑定的 Cookie(#绑定Cookie)，无需手动 #崩坏3绑定
+   * @returns {Promise<{uid:string,cookie:string,server:string}|null>}
+   */
+  async resolveCookieRole(e = {}) {
+    try {
+      const role = await CookieMgr.getSelfBh3Role(e.user)
+      if (role?.uid && role?.cookie) {
+        return { uid: String(role.uid), cookie: role.cookie, server: role.server }
+      }
+    } catch (error) {
+      if (globalThis.logger?.debug) {
+        globalThis.logger.debug(`[bh3] Cookie 账号自动解析失败: ${error.message}`)
+      }
     }
-    const cookie = getCookie(uid) || getCookie('') || await getExternalCk(uid)
+    return null
+  }
+
+  /**
+   * 解析要查询的 UID 与 Cookie
+   * 顺序: 显式 UID > 手动绑定 UID > 米游社 Cookie 账号(honkai-mys 绑定方式)
+   * @returns {Promise<{uid:string,cookie:string}>}
+   */
+  async resolveUid(e, explicitUid = '') {
+    const uid = explicitUid || getBindUid(e.user_id)
+    if (uid) {
+      const cookie = getCookie(uid)
+        || getCookie('')
+        || await getExternalCk(uid)
+        || this.getCookieFromUser(e, uid)
+      return { uid: String(uid), cookie }
+    }
+    const auto = await this.resolveCookieRole(e)
+    return auto ? { uid: auto.uid, cookie: auto.cookie } : { uid: '', cookie: '' }
+  }
+
+  /** 从 yunzai 已绑定的 Cookie 中获取指定 UID 的 CK */
+  getCookieFromUser(e = {}, uid = '') {
+    try {
+      return CookieMgr.getCkByUid(e.user, uid) || ''
+    } catch {
+      return ''
+    }
+  }
+
+  async withUid(e, action, explicitUid = '') {
+    const { uid, cookie } = await this.resolveUid(e, explicitUid)
+    if (!uid) {
+      return e.reply('请提供 UID、使用 #崩坏3绑定 <UID> 绑定，或先通过 #绑定Cookie 登录米游社账号。')
+    }
     if (!cookie) {
-      return e.reply(`无法查询 UID ${uid}：崩坏3战绩接口仅支持查询账号本人的号。\n请先用逍遥插件登录该 UID 对应的米游社账号（#扫码登录 / #绑定），或让主人执行 #崩坏3cookie ${uid} <完整Cookie> 为该 UID 配置。`)
+      return e.reply(`无法查询 UID ${uid}：崩坏3战绩接口仅支持查询账号本人的号。\n请先通过 #绑定Cookie 登录该 UID 对应的米游社账号，或让主人执行 #崩坏3cookie ${uid} <完整Cookie> 为该 UID 配置。`)
     }
     try {
       return await action(uid, cookie)
@@ -886,4 +1006,359 @@ export class Bh3Plugin extends plugin {
       return e.reply(`图鉴查询失败：${error.message}`)
     }
   }
+
+  // ==================== 以下为 honkai-mys 移植功能 ====================
+
+  /** 获取目标用户(@指定的用户或自己) */
+  async getMysTargetUser(e = {}) {
+    if (e.at && /^\d+$/.test(String(e.at))) {
+      try {
+        const atUser = await e.runtime.NoteUser.create(String(e.at))
+        if (atUser) return atUser
+      } catch (err) {
+        globalThis.logger?.error?.('[bh3] 获取@用户数据失败', err)
+      }
+    }
+    return e.user
+  }
+
+  /** 解析命令参数,返回 { uid, server, cookie }(honkai-mys 方式) */
+  async resolveMysRole(e, text = '') {
+    const user = await this.getMysTargetUser(e)
+    // 米游社id
+    if (/[mM][yY][sS]|米游社/.test(text)) {
+      const m = text.match(/\d{4,}/)
+      if (!m) throw new InfoError('米游社ID格式不对')
+      const cookie = CookieMgr.getFirstCk(user)
+      if (!cookie) throw new InfoError('请先绑定Cookie，发送【#绑定Cookie】获取教程')
+      const role = await Bh3.mys2Role(cookie, m[0])
+      return { uid: role.game_role_id, server: role.region, cookie, nickname: role.nickname }
+    }
+
+    const uidMatch = text.match(/\d{6,10}/)
+    const serverMatch = text.match(/[^\d\s]+/)
+
+    // 未提供uid: 使用绑定的Cookie账号
+    if (!uidMatch) {
+      const role = await CookieMgr.getSelfBh3Role(user)
+      return { uid: role.uid, server: role.server, cookie: role.cookie, nickname: role.nickname }
+    }
+
+    const uid = uidMatch[0]
+
+    // 提供了服务器: 直接使用(优先该 uid 登记过的 Cookie)
+    if (serverMatch) {
+      const cookie = CookieMgr.getCkByUid(user, uid) || CookieMgr.getFirstCk(user)
+      if (!cookie) throw new InfoError('请先绑定Cookie，发送【#绑定Cookie】获取教程')
+      return { uid, server: server2id(serverMatch[0]), cookie }
+    }
+
+    // 未提供服务器: 自动识别所属服务器与可用 Cookie
+    const found = await CookieMgr.findRoleByUid(user, uid)
+    if (found) return { uid, server: found.server, cookie: found.cookie }
+
+    throw new InfoError(
+      `未能自动识别 UID ${uid} 所在服务器：请确认已用该账号绑定 Cookie，或补充服务器，如：#崩坏3 ${uid}官服`,
+    )
+  }
+
+  /** 使用 honkai-mys 的 HTML 模板渲染(高分辨率，失败回退框架渲染) */
+  async renderMysHtml(tpl, data) {
+    const name = String(tpl).replace(/^html\//, '')
+    try {
+      const imgPath = await renderMysTemplate(name, data)
+      const seg = globalThis.segment
+      return seg?.image ? seg.image(imgPath) : imgPath
+    } catch (err) {
+      globalThis.logger?.warn?.(`[bh3] 高分辨率渲染失败，回退框架渲染: ${err.message}`)
+      try {
+        return await this.renderImg('bh3-plugin', `html/${name}`, data, { retType: 'base64', scale: DEVICE_SCALE })
+      } catch (fallbackError) {
+        globalThis.logger?.error?.('[bh3] renderImg 亦失败', fallbackError)
+        return e_runtimeRender(this.e, `html/${name}`, data)
+      }
+    }
+  }
+
+  /** #崩坏3 / #bh3 玩家卡片 */
+  async mysCard(e) {
+    const text = stripMysKeyword(e.msg)
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let raw
+    try {
+      raw = await new Bh3(role.cookie).part(role.uid, role.server)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const img = await this.renderMysHtml('html/bh3card', buildIndexCard(raw, role))
+    return e.reply([img])
+  }
+
+  /** #崩坏3角色 / #bh3角色 拥有的女武神列表 */
+  async mysChara(e) {
+    const text = stripMysKeyword(e.msg, '角色')
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const api = new Bh3(role.cookie)
+    let raw
+    try {
+      const [index, characters] = await Promise.all([
+        api.index(role.uid, role.server),
+        api.characters(role.uid, role.server),
+      ])
+      raw = { index, characters }
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const img = await this.renderMysHtml('html/bh3chara', buildMysCharaCard(raw, role))
+    return e.reply([img])
+  }
+
+  /** #崩坏3体力 / #崩坏3便笺 实时便签(honkai-mys 卡片) */
+  async mysNote(e) {
+    const text = stripMysKeyword(e.msg, '(体力|便签|便笺|实时便签|实时便笺)')
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let raw
+    try {
+      raw = await new Bh3(role.cookie).note(role.uid, role.server)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const img = await this.renderMysHtml('html/bh3note', buildNoteCard(raw, role))
+    return e.reply([img])
+  }
+
+  /** #崩坏3战报 舰长战报 */
+  async mysReport(e) {
+    const text = stripMysKeyword(e.msg, '(舰长战报|战报)')
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let raw
+    try {
+      raw = await new Bh3(role.cookie).part(role.uid, role.server)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    saveReports(role.uid, extractReportHistory(raw))
+    const img = await this.renderMysHtml('html/bh3report', buildReportCard(raw, role))
+    return e.reply([img])
+  }
+
+  /** #崩坏3深渊战报 / #崩坏3战场战报(更多近期记录) */
+  async mysBranchReport(e) {
+    const isAbyss = /深渊战报/.test(e.msg)
+    const text = stripMysKeyword(e.msg, '(深渊战报|战场战报)')
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let raw
+    try {
+      raw = await new Bh3(role.cookie).part(role.uid, role.server)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    saveReports(role.uid, extractReportHistory(raw))
+    const history = getReports(role.uid)
+    const data = isAbyss ? buildMysAbyssCard(raw, role, history) : buildMysBattleCard(raw, role, history)
+    const img = await this.renderMysHtml(isAbyss ? 'html/bh3abyss' : 'html/bh3battle', data)
+    return e.reply([img])
+  }
+
+  /** #崩坏3一周成绩单(当前 + 本地历史) */
+  async mysWeekly(e) {
+    const text = stripMysKeyword(e.msg, '(一周成绩单|成绩单)')
+    let role
+    try {
+      role = await this.resolveMysRole(e, text)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let raw
+    try {
+      raw = await new Bh3(role.cookie).part(role.uid, role.server)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    saveReports(role.uid, extractReportHistory(raw))
+    const img = await this.renderMysHtml('html/bh3weekly', buildWeeklyCard(raw, getReports(role.uid), role))
+    return e.reply([img])
+  }
+
+  /** #崩坏3手帐 水晶手账 */
+  async mysFinance(e) {
+    const text = stripMysKeyword(e.msg, '(手帐|手账)')
+    if (/[?？]/.test(text)) {
+      return e.reply(
+        '水晶手账查询\n发送 #崩坏3手帐 / #bh3手帐 使用绑定的Cookie账号查询\n#崩坏3手帐@他人 可查询对方手账\n(账号需绑定崩坏3角色)',
+        false,
+        { at: true },
+      )
+    }
+    let role
+    try {
+      role = await CookieMgr.getSelfBh3Role(await this.getMysTargetUser(e))
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const api = new Bh3(role.cookie)
+    let raw
+    let nickname = role.nickname || ''
+    try {
+      const [finance, index] = await Promise.all([
+        api.finance(role.uid, role.server),
+        api.index(role.uid, role.server).catch(() => null),
+      ])
+      raw = finance
+      nickname = index?.role?.nickname || nickname
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const data = buildFinanceCard(raw)
+    data.nickname = nickname || '舰长'
+    const img = await this.renderMysHtml('html/bh3finance', data)
+    return e.reply([img])
+  }
+
+  /** 记录查询上下文: 角色 + stoken + 自助查询接口 */
+  async mysRecordContext(e) {
+    const user = await this.getMysTargetUser(e)
+    const role = await CookieMgr.getSelfBh3Role(user)
+    let stoken = false
+    for (const ltuid of Object.keys(user.mysUsers || {})) {
+      stoken = getStokenByLtuid(ltuid)
+      if (stoken) break
+    }
+    if (!stoken) throw new InfoError('未找到 stoken，无法更新记录。请先在逍遥插件绑定 stoken 后再试')
+    const authkey = await genAuthKey(role.uid, role.server, stoken)
+    return { role, api: new SelfHelp(authkey, role.uid) }
+  }
+
+  /** #崩坏3更新抽卡/补给记录 */
+  async mysUpdateGacha(e) {
+    return this.updateMysRecord(e, 'gacha')
+  }
+
+  /** #崩坏3更新道具记录 */
+  async mysUpdateMaterial(e) {
+    return this.updateMysRecord(e, 'material')
+  }
+
+  async updateMysRecord(e, category) {
+    const name = category === 'gacha' ? '抽卡/补给' : '道具'
+    let ctx
+    try {
+      ctx = await this.mysRecordContext(e)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    await e.reply(`正在更新${name}记录，请稍后…`)
+    let result
+    try {
+      result = await updateRecords(ctx.api, ctx.role.uid, category)
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    const added = result.reduce((n, r) => n + r.added, 0)
+    const lines = result.map(r => `· ${r.label}：新增 ${r.added} 条（共 ${r.total} 条）`)
+    const tip = category === 'gacha' ? '抽卡' : '道具'
+    return e.reply(
+      `【崩坏3 ${name}记录】更新完成，共新增 ${added} 条\n${lines.join('\n')}\n发送 #bh3${tip}记录 查看`,
+      false,
+      { at: true },
+    )
+  }
+
+  /** #崩坏3抽卡/补给记录 [角色|装备|家园] */
+  async mysGacha(e) {
+    return this.showMysRecord(e, 'gacha', { pool: stripMysKeyword(e.msg, '(抽卡记录|补给记录)') })
+  }
+
+  /** #崩坏3抽卡统计 / #崩坏3补给统计 */
+  async mysGachaStat(e) {
+    return this.showMysRecord(e, 'gacha', { statOnly: true })
+  }
+
+  /** #崩坏3道具记录 */
+  async mysMaterial(e) {
+    return this.showMysRecord(e, 'material')
+  }
+
+  async showMysRecord(e, category, { pool = '', statOnly = false } = {}) {
+    const name = category === 'gacha' ? '抽卡/补给' : '道具'
+    let role
+    try {
+      role = await CookieMgr.getSelfBh3Role(await this.getMysTargetUser(e))
+    } catch (err) {
+      return e.reply(err.message, false, { at: true })
+    }
+    let groups = collectRecords(role.uid, category)
+    if (pool) {
+      const matched = groups.filter(g => g.label.includes(pool))
+      if (matched.length) groups = matched
+    }
+    if (!groups.some(g => g.records.length)) {
+      const tip = category === 'gacha' ? '抽卡' : '道具'
+      return e.reply(`暂无${name}记录，请先发送「#bh3更新${tip}记录」`, false, { at: true })
+    }
+
+    let nickname = role.nickname || ''
+    let avatarUrl = ''
+    try {
+      const idx = await new Bh3(role.cookie).index(role.uid, role.server)
+      nickname = idx?.role?.nickname || nickname
+      avatarUrl = idx?.role?.AvatarUrl || ''
+    } catch {
+      /* ignore */
+    }
+
+    if (category === 'gacha') {
+      const data = buildGachaCard({
+        groups,
+        nickname,
+        uid: role.uid,
+        serverName: id2server(role.server),
+        avatarUrl,
+      })
+      const img = await this.renderMysHtml('html/bh3gacha', data)
+      return e.reply([img])
+    }
+
+    const data = buildRecordCard({
+      category,
+      groups,
+      nickname,
+      uid: role.uid,
+      serverName: id2server(role.server),
+      avatarUrl,
+      statOnly,
+    })
+    const img = await this.renderMysHtml('html/bh3record', data)
+    return e.reply([img])
+  }
+}
+
+/** 调用 runtime 渲染(honkai-mys 回退路径) */
+function e_runtimeRender(ctx, path, data) {
+  return ctx.runtime.render('bh3-plugin', path, data, { retType: 'base64' })
 }

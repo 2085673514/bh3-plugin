@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3抽卡记录</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f5f6fb;
+    color: #1e1f20;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    padding: 18px 15px 8px;
+  }
+  .container { display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; }
+
+  /* 头部 */
+  .info_box { width: 465px; }
+  .head_box {
+    border-radius: 15px;
+    padding: 12px 20px;
+    position: relative;
+    background: linear-gradient(135deg, #eaeef8 0%, #dbe4f5 100%);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, .15);
+  }
+  .head_box .id_text { font-size: 22px; color: #000; padding: 2px 0; font-variant-numeric: tabular-nums; }
+  .head_box .day_text { font-size: 20px; color: #000; font-weight: 800; padding: 2px 0; }
+  .head_box .label {
+    font-size: 12px; font-weight: 400; color: #fff; vertical-align: 2px;
+    padding: 2px 8px; border-radius: 10px; background: #757CC8;
+  }
+  .head_box .logo_text {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 15px; font-weight: 800; letter-spacing: 3px;
+    color: #3a5a8c; opacity: .8;
+  }
+
+  /* 数据总览 */
+  .data_box {
+    border-radius: 15px;
+    margin-top: 20px;
+    padding: 20px 10px 12px;
+    background: #fff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, .15);
+    position: relative;
+  }
+  .tab_lable {
+    position: absolute; top: -10px; left: -8px;
+    background: #d4b98c; color: #fff; font-size: 14px;
+    padding: 3px 10px; border-radius: 15px 0 15px 15px;
+  }
+  .data_line { display: flex; justify-content: space-around; margin-bottom: 12px; }
+  .data_line_item { width: 100px; text-align: center; }
+  .data_line_item .num { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .data_line_item .num .unit { font-size: 12px; font-weight: 400; }
+  .data_line_item .lable { font-size: 13px; color: #7f858a; margin-top: 3px; }
+
+  .line_box {
+    display: flex; align-items: center; gap: 10px;
+    height: 26px; font-size: 14px; color: #7d7d7d; padding: 0 4px;
+  }
+  .line_box .line { flex: 1; height: 2px; background: #ebebeb; }
+
+  /* 出金卡片 */
+  .card_list { display: flex; flex-wrap: wrap; padding: 2px 2px 0; }
+  .gitem {
+    width: 104px; min-height: 126px; margin: 8px;
+    border-radius: 8px; padding: 10px 6px 9px;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 2px 6px rgba(132, 93, 90, .28);
+    background: #f2f3f7;
+  }
+  .gitem .gicon {
+    width: 64px; height: 64px; flex: none; margin-bottom: 6px;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+  }
+  .gitem .gname {
+    flex: none; min-height: 30px; font-size: 11.5px; line-height: 1.3; text-align: center; color: #3b2b12;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .gitem .gnum {
+    flex: none; font-size: 15px; font-weight: 800; border-radius: 5px; padding: 2px 10px; margin-top: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .gitem.gold { background: #fff7d6; }
+  .gitem.good { background: #e7f7ec; }
+  .gitem.normal { background: #efe8ff; }
+  .gitem.bad { background: #fbe9e9; }
+  .gnum.gold { background: #ffeb73; color: #6f4b00; }
+  .gnum.good { background: #168b2c; color: #fff; }
+  .gnum.normal { background: #6939b7; color: #fff; }
+  .gnum.bad { background: #9d3333; color: #fff; }
+  .gempty { font-size: 13px; color: #9aa4b2; padding: 6px 4px 8px; }
+
+  .empty { text-align: center; color: #9aa4b2; font-size: 15px; padding: 30px; }
+  .footer { margin-top: 6px; padding-left: 4px; font-size: 12px; color: #9aa4b2; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .head_box { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; box-shadow: 0 5px 14px rgba(160,80,160,0.22) !important; }
+  .head_box .id_text, .head_box .day_text { color: #8e2f68 !important; }
+  .head_box .label { background: #b23ac4 !important; }
+  .head_box .logo_text { color: #a13570 !important; opacity: .9 !important; }
+  .data_box { box-shadow: 0 5px 14px rgba(160,80,160,0.18) !important; border: 1px solid rgba(214,77,148,0.35) !important; }
+  .tab_lable { background: #d64d94 !important; }
+  .line_box { color: #7a4a9e !important; }
+  .line_box .line { background: rgba(214,77,148,0.25) !important; }
+  .data_line_item .num { color: #8e2f68 !important; }
+  .data_line_item .lable { color: #7a4a9e !important; }
+  .empty, .footer, .gempty { color: #7a4a9e !important; }
+</style>
+</head>
+<body style="width:{{width}}px" {{if sys}}{{sys.scale}}{{/if}}>
+  {{if pools.length}}
+  <div class="container">
+    {{each pools p}}
+    <div class="info_box">
+      <div class="head_box">
+        <div class="id_text">UID: {{uid}}</div>
+        <h2 class="day_text">{{p.allNum}}抽 <span class="label">{{p.label}}</span></h2>
+        <div class="logo_text">崩坏3</div>
+      </div>
+      <div class="data_box">
+        <div class="tab_lable">数据总览</div>
+        <div class="data_line">
+          {{each p.stats it}}
+          <div class="data_line_item">
+            <div class="num">{{it.num}}<span class="unit">{{it.unit}}</span></div>
+            <div class="lable">{{it.lable}}</div>
+          </div>
+          {{/each}}
+        </div>
+        <div class="line_box">
+          <span class="line"></span>
+          <span class="text">{{if p.fiveLog.length}}出货历史 {{p.firstTime}} ~ {{p.lastTime}}{{else}}暂无出货{{/if}}</span>
+          <span class="line"></span>
+        </div>
+        <div class="card_list">
+          {{if p.fiveLog.length}}
+          {{each p.fiveLog g}}
+          <div class="gitem {{g.luck}}">
+            {{if g.icon}}<span class="gicon" style="background-image:url({{g.icon}})"></span>{{/if}}
+            <div class="gname">{{g.name}}</div>
+            <div class="gnum {{g.luck}}">{{g.num}}</div>
+          </div>
+          {{/each}}
+          {{else}}
+          <div class="gempty">该卡池暂无出货记录</div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  <div class="footer">共 {{total}} 抽 · {{nickname}}{{if serverName}} · {{serverName}}服{{/if}}</div>
+  {{else}}
+  <div class="empty">暂无抽卡记录，请先发送「#bh3更新抽卡记录」</div>
+  {{/if}}
+</body>
+</html>

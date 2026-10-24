@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3实时便签</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 420px;
+    min-height: 747px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; flex: 1; display: flex; flex-direction: column; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap { position: relative; padding: 22px 28px; text-align: center; }
+  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+  .sub { margin-top: 8px; font-size: 14px; color: #9fb2c9; }
+  .sub b { color: #ffd88a; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 体力 */
+  .stamina { margin-top: 14px; }
+  .stamina-num { display: flex; align-items: baseline; gap: 8px; }
+  .stamina-num .cur {
+    font-size: 46px; font-weight: 800; color: #00c0ff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 24px rgba(0,192,255,.35);
+  }
+  .stamina-num .max { font-size: 18px; color: #9fb2c9; font-variant-numeric: tabular-nums; }
+  .stamina-num .full {
+    margin-left: auto; font-size: 13px; font-weight: 700; color: #3ad1a0;
+    background: rgba(58,209,160,.14);
+    border: 1px solid rgba(58,209,160,.4);
+    border-radius: 999px; padding: 3px 12px;
+  }
+  .bar {
+    margin-top: 12px; height: 14px; border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+  }
+  .bar-in {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #00c0ff, #5cc8ff);
+    box-shadow: 0 0 16px rgba(0,192,255,.55);
+  }
+  .recover { margin-top: 10px; font-size: 13px; color: #9fb2c9; }
+
+  /* 训练 */
+  .train-row { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .train-row .bar { flex: 1; margin-top: 0; height: 12px; }
+  .train-row .bar-in { background: linear-gradient(90deg, #ffd95c, #ffb84d); box-shadow: 0 0 16px rgba(255,216,138,.45); }
+  .train-row .val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .train-row .val em { font-style: normal; color: #ffd88a; }
+
+  /* 活动 */
+  .act {
+    display: flex; align-items: center; gap: 8px;
+    padding: 15px 4px;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+    white-space: nowrap;
+  }
+  .act:last-child { border-bottom: none; }
+  .act .name { font-size: 14px; font-weight: 700; width: 72px; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .act .val { font-size: 17px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; flex: none; }
+  .act .lab { font-size: 11px; color: #9fb2c9; flex: none; }
+  .act .tag {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    border-radius: 999px; padding: 3px 10px; flex: none;
+  }
+  .act .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
+  .act .tag.closed { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
+  .act .remain { font-size: 11px; color: #9fb2c9; margin-left: 6px; flex: none; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, .container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .card {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.4) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .nickname, .sec-title { color: #8e2f68 !important; }
+  .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
+  .sec-title i { background: #d64d94 !important; }
+  .sub, .recover, .stamina-num .max, .act .lab, .act .remain, .empty { color: #7a4a9e !important; }
+  .sub b { color: #b23ac4 !important; }
+  .train-row .val { color: #8e2f68 !important; }
+  .train-row .val em { color: #b23ac4 !important; }
+  .stamina-num .cur, .act .val { color: #b23ac4 !important; text-shadow: 0 0 24px rgba(178,58,196,0.3) !important; }
+  .bar { background: rgba(214,77,148,0.15) !important; }
+  .bar-in, .train-row .bar-in { background: linear-gradient(90deg, #d64d94, #b23ac4) !important; box-shadow: 0 0 16px rgba(178,58,196,0.45) !important; }
+  .act { border-color: rgba(214,77,148,0.25) !important; }
+  .full, .tag.open { color: #7a3fae !important; background: rgba(178,58,196,0.12) !important; border-color: rgba(178,58,196,0.4) !important; }
+  .tag.closed { color: #8a6b86 !important; background: rgba(255,255,255,0.45) !important; border-color: rgba(214,77,148,0.25) !important; }
+</style>
+</head>
+<body {{if sys}}{{sys.scale}}{{/if}}>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="wrap">
+      <div class="nickname">{{if nickname}}{{nickname}}{{else}}舰长{{/if}} 的实时便签</div>
+      <div class="sub">UID: <b>{{uid}}</b> · {{serverName}}服</div>
+    </div>
+  </div>
+
+  <!-- 体力 -->
+  <div class="card">
+    <div class="sec-title"><i></i>体力</div>
+    <div class="stamina">
+      <div class="stamina-num">
+        <span class="cur">{{stamina}}</span>
+        <span class="max">/ {{maxStamina}}</span>
+        {{if staminaFull}}<span class="full">已回满</span>{{/if}}
+      </div>
+      <div class="bar"><div class="bar-in" style="width:{{staminaPercent}}%"></div></div>
+      <div class="recover">{{recoverText}}</div>
+    </div>
+  </div>
+
+  <!-- 每日训练 -->
+  <div class="card">
+    <div class="sec-title"><i></i>每日训练</div>
+    <div class="train-row">
+      <span class="val"><em>{{train}}</em> / {{maxTrain}}</span>
+      <div class="bar"><div class="bar-in" style="width:{{trainPercent}}%"></div></div>
+      {{if trainDone}}<span class="val" style="color:#3ad1a0">已完成</span>{{/if}}
+    </div>
+  </div>
+
+  <!-- 活动 -->
+  <div class="card">
+    <div class="sec-title"><i></i>活动进度</div>
+    {{if activities.length}}
+    {{each activities a}}
+    <div class="act">
+      <span class="name">{{a.name}}</span>
+      <span class="val">{{a.value}}</span>
+      <span class="lab">{{a.valueLabel}}</span>
+      <span class="tag {{if a.open}}open{{else}}closed{{/if}}">{{if a.open}}进行中{{else}}未开启{{/if}}</span>
+      {{if a.remain}}<span class="remain">{{a.remain}}</span>{{/if}}
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">暂无活动数据</div>
+    {{/if}}
+  </div>
+
+</div>
+</body>
+</html>

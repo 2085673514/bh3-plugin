@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3水晶手账</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 495px;
+    min-height: 880px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; flex: 1; display: flex; flex-direction: column; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap { position: relative; padding: 22px 28px; text-align: center; }
+  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+  .sub { margin-top: 8px; font-size: 14px; color: #9fb2c9; }
+  .sub b { color: #ffd88a; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 本月 */
+  .money-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .money {
+    text-align: center;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px;
+    padding: 18px 10px;
+  }
+  .money .num {
+    font-size: 40px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 24px rgba(0,192,255,.25);
+  }
+  .money.hcoin .num { color: #00c0ff; }
+  .money.star .num { color: #ffd95c; }
+  .money .lab { margin-top: 6px; font-size: 13px; color: #9fb2c9; letter-spacing: 2px; }
+  .today {
+    margin-top: 12px; text-align: center;
+    font-size: 14px; color: #c9d6e8;
+    background: rgba(0,192,255,.08);
+    border: 1px solid rgba(0,192,255,.2);
+    border-radius: 10px;
+    padding: 9px;
+  }
+  .supply-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  .supply-row .supply:only-child { grid-column: 1 / -1; }
+  .supply {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: rgba(255,216,138,.07);
+    border: 1px solid rgba(255,216,138,.22);
+    border-radius: 10px; padding: 11px 10px;
+  }
+  .supply .lab { font-size: 13px; color: #9fb2c9; }
+  .supply .val { font-size: 14px; color: #e8eef7; }
+  .supply .val b { font-size: 22px; font-weight: 800; color: #ffd88a; font-variant-numeric: tabular-nums; }
+  .cmp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  .cmp {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 13px; color: #9fb2c9;
+    background: rgba(255,255,255,.04);
+    border-radius: 10px; padding: 9px;
+  }
+  .cmp b { color: #e8eef7; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .cmp .up { color: #3ad1a0; font-weight: 700; }
+  .cmp .down { color: #ff7a7a; font-weight: 700; }
+
+  /* 上月 */
+  .last-wrap { display: flex; gap: 22px; margin-top: 14px; align-items: center; }
+  .last-list { flex: 1; }
+  .last-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+    font-size: 14px;
+  }
+  .last-item:last-child { border-bottom: none; }
+  .last-item .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .last-item .name { flex: 1; color: #c9d6e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .last-item .num { color: #9fb2c9; font-variant-numeric: tabular-nums; }
+  .last-item .pct { color: #ffd88a; font-weight: 700; width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+  .ring-box { position: relative; width: 150px; height: 150px; flex: none; }
+  .ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: {{ring}};
+    mask: radial-gradient(closest-side, transparent 62%, #000 63%);
+    -webkit-mask: radial-gradient(closest-side, transparent 62%, #000 63%);
+  }
+  .ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+  }
+  .ring-center .v { font-size: 22px; font-weight: 800; color: #ffd88a; font-variant-numeric: tabular-nums; }
+  .ring-center .l { font-size: 11px; color: #9fb2c9; }
+
+  .last-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .last-nums .money { padding: 12px 10px; }
+  .last-nums .money .num { font-size: 26px; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, .container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .card, .money, .supply, .cmp, .last-item {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.4) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .nickname, .sec-title { color: #8e2f68 !important; }
+  .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
+  .sec-title i { background: #d64d94 !important; }
+  .sub, .money .lab, .cmp, .last-item .num, .ring-center .l, .empty { color: #7a4a9e !important; }
+  .sub b { color: #b23ac4 !important; }
+  .money .num { color: #8e2f68 !important; text-shadow: 0 0 24px rgba(178,58,196,0.2) !important; }
+  .money.hcoin .num { color: #8e35c9 !important; }
+  .money.star .num { color: #b23ac4 !important; }
+  .supply .val b, .ring-center .v, .cmp b { color: #b23ac4 !important; }
+  .today { background: rgba(214,77,148,0.1) !important; border-color: rgba(214,77,148,0.3) !important; color: #8e2f68 !important; }
+  .last-item { border-color: rgba(214,77,148,0.2) !important; }
+  .last-item .name { color: #57204a !important; }
+  .last-item .pct { color: #b23ac4 !important; }
+</style>
+</head>
+<body {{if sys}}{{sys.scale}}{{/if}}>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="wrap">
+      <div class="nickname">{{nickname}} 的手账</div>
+      <div class="sub">UID: <b>{{uid}}</b> · {{month}}月手账 · 截止至 <b>{{date}}</b></div>
+    </div>
+  </div>
+
+  <!-- 本月 -->
+  <div class="card">
+    <div class="sec-title"><i></i>本月收入</div>
+    <div class="money-row">
+      <div class="money hcoin"><div class="num">{{monthHcoin}}</div><div class="lab">本月水晶</div></div>
+      <div class="money star"><div class="num">{{monthStar}}</div><div class="lab">本月星石</div></div>
+    </div>
+    <div class="today">{{todayText}}</div>
+    {{if hasCardCount}}
+    <div class="supply-row">
+      {{if cardCount !== null && cardCount !== undefined}}
+      <div class="supply"><span class="lab">本月补给卡</span><span class="val"><b>{{cardCount}}</b> 张</span></div>
+      {{/if}}
+      {{if lastCardCount !== null && lastCardCount !== undefined}}
+      <div class="supply"><span class="lab">上月补给卡</span><span class="val"><b>{{lastCardCount}}</b> 张</span></div>
+      {{/if}}
+    </div>
+    {{/if}}
+    <div class="cmp-row">
+      <div class="cmp">上月水晶 <b>{{lastHcoin}}</b>
+        {{if hcoinRate > 0}}<span class="up">↑{{hcoinRate}}%</span>{{else if hcoinRate < 0}}<span class="down">↓{{-hcoinRate}}%</span>{{/if}}
+      </div>
+      <div class="cmp">上月星石 <b>{{lastStar}}</b>
+        {{if starRate > 0}}<span class="up">↑{{starRate}}%</span>{{else if starRate < 0}}<span class="down">↓{{-starRate}}%</span>{{/if}}
+      </div>
+    </div>
+  </div>
+
+  <!-- 上月 -->
+  <div class="card">
+    <div class="sec-title"><i></i>上月 {{lastMonth}}月手账</div>
+    <div class="sub" style="margin-top:8px;font-size:13px">{{lastDate}}</div>
+    {{if group.length}}
+    <div class="last-wrap">
+      <div class="last-list">
+        {{each group g}}
+        <div class="last-item">
+          <span class="dot" style="background:{{g.color}}"></span>
+          <span class="name">{{g.name}}</span>
+          <span class="num">{{g.num}}</span>
+          <span class="pct">{{g.percent}}%</span>
+        </div>
+        {{/each}}
+      </div>
+      {{if ring}}
+      <div class="ring-box">
+        <div class="ring"></div>
+        <div class="ring-center">
+          <span class="v">{{lastMonthHcoin}}</span>
+          <span class="l">上月水晶</span>
+        </div>
+      </div>
+      {{/if}}
+    </div>
+    <div class="last-nums">
+      <div class="money hcoin"><div class="num">{{lastMonthHcoin}}</div><div class="lab">上月水晶</div></div>
+      <div class="money star"><div class="num">{{lastMonthStar}}</div><div class="lab">上月星石</div></div>
+    </div>
+    {{else}}
+    <div class="empty">暂无上月数据</div>
+    {{/if}}
+  </div>
+
+</div>
+</body>
+</html>

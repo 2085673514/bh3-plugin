@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3舰长战报</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 620px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; flex: 1; display: flex; flex-direction: column; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap { position: relative; display: flex; align-items: center; gap: 18px; padding: 20px 26px; }
+  .avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.75);
+    background: rgba(255,255,255,.12); object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45); flex: none;
+  }
+  .header .info { flex: 1; min-width: 0; }
+  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .badge {
+    font-size: 12px; padding: 3px 11px; border-radius: 999px;
+    background: rgba(0,192,255,.16); border: 1px solid rgba(0,192,255,.45); color: #9fe4ff;
+  }
+  .badge.level { background: rgba(255,216,138,.16); border-color: rgba(255,216,138,.55); color: #ffd88a; }
+  .badge.uid { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: #c9d6e8; font-variant-numeric: tabular-nums; }
+
+  /* 一周成绩单 */
+  .week-range { margin-top: 8px; font-size: 13px; color: #9fb2c9; letter-spacing: 1px; }
+  .weekly { margin-top: 12px; flex: 1; display: flex; flex-direction: column; }
+  .fav {
+    position: relative; height: 168px; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(135deg, #1c2e4d, #24406b);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .fav img { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; }
+  .fav .fav-name {
+    position: absolute; left: 0; bottom: 0; right: 0;
+    padding: 8px 14px; font-size: 17px; font-weight: 800;
+    background: linear-gradient(0deg, rgba(0,0,0,.72), transparent);
+  }
+  .fav .fav-tag {
+    position: absolute; left: 12px; top: 12px;
+    font-size: 12px; font-weight: 700; color: #ffd88a;
+    background: rgba(0,0,0,.45); border: 1px solid rgba(255,216,138,.5);
+    border-radius: 999px; padding: 2px 10px;
+  }
+  .fav .fav-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #9fb2c9; font-size: 14px; }
+  .week-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .ws {
+    text-align: center; background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07); border-radius: 10px; padding: 10px 4px;
+  }
+  .ws b { display: block; font-size: 19px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; }
+  .ws span { display: block; font-size: 11px; color: #9fb2c9; margin-top: 3px; }
+
+  /* 深渊战报 */
+  .aby {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 12px 14px; margin-top: 12px;
+  }
+  .aby:first-of-type { margin-top: 12px; }
+  .aby-top { display: flex; align-items: center; gap: 12px; }
+  .aby-top .boss-name { flex: 1; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .aby-top .score { font-size: 24px; font-weight: 800; color: #ffd88a; font-variant-numeric: tabular-nums; }
+  .aby-mid { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .aby-mid .lineup { flex: 1; display: flex; gap: 8px; }
+  .aby-mid .lineup img {
+    width: 64px; height: 64px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); object-fit: cover;
+  }
+  .aby-mid .boss img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: rgba(255,255,255,.06); }
+  .aby-bot { display: flex; align-items: center; margin-top: 10px; font-size: 12px; color: #9fb2c9; gap: 12px; flex-wrap: wrap; }
+  .aby-bot b { color: #e8eef7; font-weight: 700; }
+  .aby-bot .time { margin-left: auto; }
+
+  /* 战场战报 */
+  .bf-sum {
+    display: flex; align-items: baseline; gap: 12px; margin-top: 12px;
+    font-size: 13px; color: #9fb2c9;
+  }
+  .bf-sum b { color: #ffd88a; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .bf-sum .time { margin-left: auto; }
+  .bf-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .bf-card {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 10px; text-align: center;
+  }
+  .bf-card .bf-boss { width: 100%; height: 84px; border-radius: 8px; object-fit: cover; background: rgba(255,255,255,.06); }
+  .bf-card .bf-name { font-size: 12px; margin-top: 6px; color: #c9d6e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bf-card .bf-lineup { display: flex; justify-content: center; gap: 4px; margin-top: 8px; }
+  .bf-card .bf-lineup img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: rgba(255,255,255,.06); }
+  .bf-card .bf-score { font-size: 17px; font-weight: 800; color: #ffd88a; margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
+  .footer-tip { margin-top: 16px; text-align: center; font-size: 13px; color: #9fb2c9; letter-spacing: 1px; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, #container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .card, .aby, .bf-card, .ws, .fav {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.4) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .nickname, .sec-title { color: #8e2f68 !important; }
+  .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
+  .sec-title i { background: #d64d94 !important; }
+  .badge { background: rgba(214,77,148,0.12) !important; border-color: rgba(214,77,148,0.45) !important; color: #a13570 !important; }
+  .badge.level { background: rgba(142,47,104,0.12) !important; border-color: rgba(142,47,104,0.5) !important; color: #8e2f68 !important; }
+  .badge.uid { background: rgba(255,255,255,0.5) !important; border-color: rgba(214,77,148,0.3) !important; color: #7a4a9e !important; }
+  .empty, .footer-tip, .week-range, .aby-bot, .bf-sum, .ws span, .fav-empty, .bf-card .bf-name { color: #7a4a9e !important; }
+  .ws b, .aby-top .score, .bf-sum b, .bf-card .bf-score { color: #b23ac4 !important; }
+  .aby-bot b { color: #8e2f68 !important; }
+  .fav { background: linear-gradient(135deg, #f6d9f0, #e6c8f4) !important; }
+  .fav .fav-tag { color: #fff !important; background: rgba(214,77,148,0.85) !important; border-color: rgba(255,255,255,0.5) !important; }
+</style>
+</head>
+<body {{if sys}}{{sys.scale}}{{/if}}>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="wrap">
+      <img class="avatar" src="{{avatarUrl}}" alt="头像">
+      <div class="info">
+        <div class="nickname">{{nickname}}</div>
+        <div class="badges">
+          <span class="badge level">Lv.{{level}}</span>
+          <span class="badge">{{serverName}}服</span>
+          <span class="badge uid">UID: {{uid}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 一周成绩单 -->
+  <div class="card">
+    <div class="sec-title"><i></i>一周成绩单</div>
+    {{if weekly.range}}<div class="week-range">统计周期：{{weekly.range}}</div>{{/if}}
+    <div class="weekly">
+      <div class="fav">
+        {{if weekly.favImg}}
+        <img src="{{weekly.favImg}}" alt="{{weekly.favName}}">
+        <span class="fav-tag">本周最爱角色</span>
+        {{if weekly.favName}}<div class="fav-name">{{weekly.favName}}</div>{{/if}}
+        {{else}}
+        <div class="fav-empty">本周暂无最爱角色数据</div>
+        {{/if}}
+      </div>
+      <div class="week-stats">
+        <div class="ws"><b>{{weekly.activeDays}}</b><span>活跃天数</span></div>
+        <div class="ws"><b>{{weekly.onlineHours}}</b><span>在线时长(时)</span></div>
+        <div class="ws"><b>{{weekly.stamina}}</b><span>消耗体力</span></div>
+        <div class="ws"><b>{{weekly.goldIncome}}</b><span>金币收入</span></div>
+        <div class="ws"><b>{{weekly.goldExpenditure}}</b><span>金币支出</span></div>
+        <div class="ws"><b>{{weekly.mainLinePct}}%</b><span>主线体力占比</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 深渊战报 -->
+  <div class="card">
+    <div class="sec-title"><i></i>深渊战报</div>
+    {{if abyssReports.length}}
+    {{each abyssReports r}}
+    <div class="aby">
+      <div class="aby-top">
+        <span class="boss-name">{{r.type}} · {{r.bossName}}</span>
+        <span class="score">{{r.score}}</span>
+      </div>
+      <div class="aby-mid">
+        <div class="lineup">
+          {{each r.lineup a}}
+          <img src="{{a.icon}}" alt="{{a.name}}">
+          {{/each}}
+        </div>
+        <div class="boss"><img src="{{r.bossAvatar}}" alt="{{r.bossName}}"></div>
+      </div>
+      <div class="aby-bot">
+        <span>段位: <b>{{r.level}}</b></span>
+        {{if r.rank !== null && r.rank !== undefined}}<span>排名: <b>{{r.rank}}</b></span>{{/if}}
+        {{if r.cup !== null && r.cup !== undefined}}<span>杯数: <b>{{r.cup}}</b></span>{{/if}}
+        <span class="time">结算: {{r.time}}</span>
+      </div>
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">暂无深渊战报</div>
+    {{/if}}
+  </div>
+
+  <!-- 战场战报 -->
+  <div class="card">
+    <div class="sec-title"><i></i>战场战报</div>
+    {{if bfInfo}}
+    <div class="bf-sum">
+      <span>{{bfInfo.area}} · {{bfInfo.pct}}%</span>
+      <b>{{bfInfo.score}}</b>
+      <span class="time">结算: {{bfInfo.time}}</span>
+    </div>
+    <div class="bf-row">
+      {{each bfInfos b}}
+      <div class="bf-card">
+        <img class="bf-boss" src="{{b.bossAvatar}}" alt="{{b.bossName}}">
+        <div class="bf-name">{{b.bossName}}</div>
+        <div class="bf-lineup">
+          {{each b.lineup a}}
+          <img src="{{a.bg}}" alt="{{a.name}}">
+          {{/each}}
+        </div>
+        <div class="bf-score">{{b.score}}</div>
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <div class="empty">暂无战场战报</div>
+    {{/if}}
+  </div>
+
+  <div class="footer-tip">{{footer}}</div>
+
+</div>
+</body>
+</html>
