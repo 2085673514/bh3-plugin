@@ -12,6 +12,7 @@ import {
   getAllCharacters,
   searchCharacters,
 } from '../lib/characters.js'
+import { readCharacterMeta, updateCharacterData } from '../lib/characterUpdater.js'
 import { calculateDamage } from '../lib/damage.js'
 import { renderHelpImage } from '../lib/helpImage.js'
 import { renderCardImage } from '../lib/cardImage.js'
@@ -378,6 +379,9 @@ function buildGodWarCard(data = {}) {
 }
 
 function buildHelp() {
+  const characterCount = getAllCharacters().length
+  const listLabel = characterCount > 0 ? `${characterCount} 名女武神清单` : '女武神清单'
+  const dbLabel = characterCount > 0 ? `内置 ${characterCount} 名女武神数据库` : '内置女武神数据库'
   return [
     '=== 崩坏3 查询插件 ===',
     '',
@@ -394,7 +398,7 @@ function buildHelp() {
     '#崩坏3体力 / #崩坏3便笺　实时便签卡片（体力/训练/深渊/战场/乐土）',
     '#崩坏3角色　　　　　　　拥有的女武神列表（Cookie 账号）',
     '#崩坏3角色 <角色名>　　　角色面板（大头像/装备/六维）',
-    '#崩坏3角色列表　　　　　110 名女武神清单',
+    `#崩坏3角色列表　　　　　${listLabel}`,
     '#崩坏3深渊　　超弦空间战绩',
     '#崩坏3战场　　记忆战场战绩',
     '#崩坏3逐光　　往世乐土战绩',
@@ -413,11 +417,12 @@ function buildHelp() {
     '#崩坏3抽卡统计　　　　　抽卡统计（S 级/5 星）',
     '#崩坏3更新道具记录 / #崩坏3道具记录　更新并查看道具记录',
     '',
-    '【角色数据】（内置 110 名女武神数据库，支持别名）',
+    `【角色数据】（${dbLabel}，支持别名）`,
     '#崩坏3角色图 <名字/别名>　　角色立绘 + 背景图 + 角色档案',
     '#崩坏3角色 <角色名>　　　　角色面板（大头像/装备/六维，仿喵喵风格）',
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  例：#崩坏3伤害 炎律 300 20 100 200',
+    '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
     '#崩坏3图鉴 <关键词>　　　　搜索图鉴',
@@ -453,6 +458,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(伤害|伤害计算)\\s+([\\s\\S]+)$`, fnc: 'damageCommand' },
         { reg: `^${PREFIX}(角色图|立绘|背景图|图鉴卡)\\s+([\\s\\S]+)$`, fnc: 'characterArtCommand' },
         { reg: `^${PREFIX}角色列表(?:\\s+(\\d{5,12}))?$`, fnc: 'showCharacters' },
+        { reg: `^${PREFIX}(更新|刷新)角色库$`, fnc: 'refreshCharacters' },
         { reg: `^${PREFIX}图鉴详情\\s+(\\d+)\\s*$`, fnc: 'wikiDetailCommand' },
         { reg: `^${PREFIX}(角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchByType' },
         { reg: `^${PREFIX}(图鉴|查询|wiki)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchCommand' },
@@ -667,6 +673,20 @@ export class Bh3Plugin extends plugin {
         text: formatNote(data),
       })
     }, match?.[4] || '')
+  }
+
+  /** #崩坏3更新角色库：主人手动刷新女武神数据库（启动时也会自动检查更新） */
+  async refreshCharacters(e) {
+    if (!isMaster(e)) {
+      return e.reply('仅主人可以更新角色数据库。')
+    }
+    const meta = readCharacterMeta()
+    await e.reply(`开始从米游社图鉴更新角色数据库（当前 ${meta.count} 名）…\n抓取约需半分钟，完成后自动生效，无需重启。`)
+    const result = await updateCharacterData()
+    if (!result.ok) {
+      return e.reply(`角色数据库更新失败：${result.reason || '未知原因'}\n原有数据已保留。`)
+    }
+    return e.reply(`角色数据库已更新：${result.count} 名女武神（抓取失败 ${result.failed} 个），已立即生效。`)
   }
 
   async showCharacters(e) {

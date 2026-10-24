@@ -1,11 +1,10 @@
 {
-  "generatedAt": "2026-08-02T18:36:33.540Z",
+  "generatedAt": "2026-10-24T13:11:02.065Z",
   "characters": [
     {
       "id": 59,
       "name": "黯蔷薇",
       "aliases": [
-        "暂无",
         "丽塔",
         "黯蔷薇"
       ],
@@ -2007,6 +2006,37 @@
       }
     },
     {
+      "id": 4270,
+      "name": "时序之律者",
+      "aliases": [
+        "时律",
+        "神寻",
+        "寻梦者",
+        "时序之律者"
+      ],
+      "character": "寻梦者",
+      "attribute": "虚数",
+      "element": "火",
+      "weaponType": "",
+      "role": "",
+      "rarity": "S",
+      "icon": "https://act-upload.mihoyo.com/bh3-wiki/2026/09/21/4976467/05bb911627afdad908c87a4f30182c4a_236361978098267616.png",
+      "avatar": "https://act-upload.mihoyo.com/bh3-wiki/2026/09/21/4976467/6b80d4d0baf5eb76a94fb9a3d7106113_7532828573867385297.png",
+      "portrait": "https://act-upload.mihoyo.com/bh3-wiki/2026/09/21/4976467/4d3501e501b01c5f164f3bbf13d4136d_1313202788858328823.gif",
+      "background": "https://act-upload.mihoyo.com/bh3-wiki/2026/09/21/4976467/4d3501e501b01c5f164f3bbf13d4136d_1313202788858328823.gif",
+      "baseAttack": 668,
+      "life": 2138,
+      "defense": 224,
+      "hexagon": {
+        "持续输出": 95,
+        "爆发输出": 100,
+        "爆发速度": 90,
+        "控制能力": 90,
+        "生存能力": 80,
+        "辅助能力": 100
+      }
+    },
+    {
       "id": 46,
       "name": "识之律者",
       "aliases": [
@@ -3291,7 +3321,7 @@
       "icon": "https://act-upload.mihoyo.com/bh3-wiki/2026/01/29/4976467/e7103c47fb42ab29299ba055bb9f6190_932287349701186134.png",
       "avatar": "https://act-upload.mihoyo.com/bh3-wiki/2026/01/29/4976467/2aab6e5a3fe0d4cef474526e5b16efbd_4391258740181403062.png",
       "portrait": "https://act-upload.mihoyo.com/bh3-wiki/2026/02/04/4976467/490bd67a68e43c6fb83d118e868e8990_2600785748931490545.gif",
-      "background": "https://act-upload.mihoyo.com/bh3-wiki/2026/02/04/4976467/490bd67a68e43c6fb83d118e868e8990_2600785748931490545.gif",
+      "background": "https://act-upload.mihoyo.com/bh3-wiki/2026/09/13/75216984/9148eb5c3ac7c66985c6c8f906a772f4_8806384919072658784.gif",
       "baseAttack": 668,
       "life": 2138,
       "defense": 224,

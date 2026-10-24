@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { Bh3Plugin } from './apps/main.js'
+import { scheduleCharacterAutoUpdate } from './lib/characterUpdater.js'
 
 if (!globalThis.segment) {
   const oicq = await import('oicq')
@@ -15,6 +16,9 @@ if (!fs.existsSync(dataDir)) {
 if (globalThis.logger?.info) {
   globalThis.logger.info('崩坏3查询插件加载中...')
 }
+
+// 启动后自动检查女武神数据库，过期或缺失时在后台从米游社图鉴重新抓取（不阻塞 Bot 启动）
+scheduleCharacterAutoUpdate()
 
 const apps = { Bh3Plugin }
 
