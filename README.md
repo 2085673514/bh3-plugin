@@ -172,3 +172,20 @@ npm run update:data
 ```
 
 最后重启 Bot 即可使用。
+
+## 致谢
+
+本插件是站在不少人肩膀上拼出来的，特此感谢：
+
+| 项目 | 贡献 |
+| --- | --- |
+| [QWEfcxzz/bh3-plugin](https://github.com/QWEfcxzz/bh3-plugin) | 原始插件框架：战绩查询、公开图鉴、角色数据库与爱莉希雅帮助图 |
+| [chingkingm/honkai_mys](https://github.com/chingkingm/honkai_mys) | 玩家卡片、战报、手帐、补给与道具记录等功能的来源与接口思路 |
+| [yoimiya-kokomi/Miao-Yunzai](https://github.com/yoimiya-kokomi/Miao-Yunzai)、[TimeRainStarSky/Yunzai](https://github.com/TimeRainStarSky/Yunzai) | 插件运行的 Yunzai / TRSS-Yunzai 框架 |
+| [yoimiya-kokomi/miao-plugin](https://github.com/yoimiya-kokomi/miao-plugin) | 角色面板的配色、卡片布局与数据组织方式参考 |
+| [ctrlcvs/xiaoyao-cvs-plugin](https://github.com/ctrlcvs/xiaoyao-cvs-plugin)（逍遥插件） | 共享米游社 CK / `stoken`，让「只发 UID 就能查自己的面板」成为可能 |
+| 米游社 / 米哈游 | 游戏战绩、公开图鉴接口与角色图片素材 |
+
+也感谢上游仓库的所有贡献者与维护者，本改版只是在原有工作之上做了个人向的整理与合并。
+
+> 崩坏3 的角色、图像与相关数据版权归 miHoYo 所有；本插件仅用于个人学习与非商业用途，请勿用于任何商业场景。
