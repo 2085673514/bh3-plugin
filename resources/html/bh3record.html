@@ -103,7 +103,8 @@
   .footer { color: #7a4a9e !important; }
 </style>
 </head>
-<body {{if sys}}{{sys.scale}}{{/if}}>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+<div id="container">
   <div class="header">
     <div class="banner"></div>
     <div class="wrap">
@@ -178,5 +179,6 @@
   {{/if}}
 
   {{if footer}}<div class="footer">{{footer}}</div>{{/if}}
+</div>
 </body>
 </html>

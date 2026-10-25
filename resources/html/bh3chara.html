@@ -162,7 +162,7 @@
   .empty { color: #7a4a9e !important; }
 </style>
 </head>
-<body {{if sys}}{{sys.scale}}{{/if}}>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
 <div id="container">
 
   <!-- 头部 -->

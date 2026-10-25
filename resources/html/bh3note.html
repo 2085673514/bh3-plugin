@@ -136,8 +136,8 @@
   .tag.closed { color: #8a6b86 !important; background: rgba(255,255,255,0.45) !important; border-color: rgba(214,77,148,0.25) !important; }
 </style>
 </head>
-<body {{if sys}}{{sys.scale}}{{/if}}>
-<div class="container">
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+<div class="container" id="container">
 
   <!-- 头部 -->
   <div class="header">

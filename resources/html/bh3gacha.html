@@ -117,9 +117,9 @@
   .empty, .footer, .gempty { color: #7a4a9e !important; }
 </style>
 </head>
-<body style="width:{{width}}px" {{if sys}}{{sys.scale}}{{/if}}>
+<body style="width:{{width}}px{{if sys && sys.scale}};zoom:{{sys.scale}}{{/if}}">
   {{if pools.length}}
-  <div class="container">
+  <div class="container" id="container">
     {{each pools p}}
     <div class="info_box">
       <div class="head_box">

@@ -164,8 +164,8 @@
   .last-item .pct { color: #b23ac4 !important; }
 </style>
 </head>
-<body {{if sys}}{{sys.scale}}{{/if}}>
-<div class="container">
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+<div class="container" id="container">
 
   <!-- 头部 -->
   <div class="header">
