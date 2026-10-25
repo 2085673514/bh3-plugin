@@ -63,177 +63,9 @@ const ATTRIBUTE_MAP = {
   6: '星尘',
 }
 
-function formatDuration(seconds = 0) {
-  const total = Math.max(0, Number(seconds) || 0)
-  const hours = Math.floor(total / 3600)
-  const minutes = Math.floor((total % 3600) / 60)
-  if (hours > 0) return `${hours}小时${minutes}分`
-  if (minutes > 0) return `${minutes}分钟`
-  return `${total}秒`
-}
-
-function formatTime(value = '') {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-}
-
 function battleAreaLabel(area = 0) {
   const map = { 1: '低级区', 2: '中级区', 3: '高级区' }
   return map[Number(area)] || `${area}区`
-}
-
-function formatIndex(data = {}) {
-  const role = data.role || {}
-  const stats = data.stats || {}
-  const pref = data.preference || {}
-  const lines = [
-    `=== ${role.nickname || '未知舰长'} 的崩坏3面板 ===`,
-    `等级 ${role.level || '?'} · 区服 ${role.region || '未知'}`,
-  ]
-  const basic = []
-  if (stats.active_day_number) basic.push(`活跃 ${stats.active_day_number} 天`)
-  if (stats.achievement_number) basic.push(`成就 ${stats.achievement_number}`)
-  if (stats.suit_number) basic.push(`服装 ${stats.suit_number}`)
-  if (basic.length) lines.push(basic.join(' | '))
-
-  const collection = []
-  if (stats.armor_number) collection.push(`女武神 ${stats.armor_number}`)
-  if (stats.sss_armor_number) collection.push(`SSS ${stats.sss_armor_number}`)
-  if (stats.elf_number) collection.push(`人偶 ${stats.elf_number}`)
-  if (stats.weapon_number) collection.push(`武器 ${stats.weapon_number}`)
-  if (stats.five_star_weapon_number) collection.push(`5星武器 ${stats.five_star_weapon_number}`)
-  if (stats.stigmata_number) collection.push(`圣痕 ${stats.stigmata_number}`)
-  if (stats.five_star_stigmata_number) collection.push(`5星圣痕 ${stats.five_star_stigmata_number}`)
-  if (collection.length) lines.push(collection.join(' | '))
-
-  lines.push('')
-  lines.push(`深渊：${stats.new_abyss?.level || '?'}段 · 第${stats.new_abyss?.cup_number || '?'}杯 · 历史最高 ${stats.abyss_score || 0}分 (${stats.abyss_floor || '?'}层)`)
-  lines.push(`战场：${battleAreaLabel(stats.battle_field_area)} · 前${stats.battle_field_ranking_percentage || '?'}% · 最高 ${stats.battle_field_score || 0}分`)
-  if (stats.god_war_max_punish_level || stats.god_war_max_challenge_score) {
-    lines.push(`逐光：最高难度 ${stats.god_war_max_punish_level || '?'} · 最高挑战 ${stats.god_war_max_challenge_score || 0}分`)
-  }
-  if (pref.comprehensive_score) {
-    lines.push(`综合：${pref.comprehensive_rating || '?'} (${pref.comprehensive_score}分)`)
-  }
-  return lines.join('\n')
-}
-
-function formatNote(data = {}) {
-  const lines = ['=== 崩坏3 实时便笺 ===']
-  lines.push(`体力：${data.current_stamina ?? '?'}/${data.max_stamina ?? '?'}（${formatDuration(data.stamina_recover_time)}后回满）`)
-  if (data.current_train_score !== undefined) {
-    lines.push(`训练值：${data.current_train_score}/${data.max_train_score ?? '?'}`)
-  }
-  const abyss = data.greedy_endless
-  if (abyss?.is_open) {
-    lines.push(`量子奇点：奖励 ${abyss.cur_reward ?? 0}/${abyss.max_reward ?? 0} · ${formatTime(abyss.schedule_end)}结束`)
-  }
-  const ultra = data.ultra_endless
-  if (ultra?.is_open) {
-    lines.push(`超弦空间：组别Lv.${ultra.group_level ?? '?'} · 分数 ${ultra.challenge_score ?? 0} · ${formatTime(ultra.schedule_end)}结束`)
-  }
-  const field = data.battle_field
-  if (field?.is_open) {
-    lines.push(`记忆战场：奖励 ${field.cur_reward ?? 0}/${field.max_reward ?? 0} (SSS ${field.cur_sss_reward ?? 0}/${field.max_sss_reward ?? 0}) · ${formatTime(field.schedule_end)}结束`)
-  }
-  const godWar = data.god_war
-  if (godWar?.is_open) {
-    lines.push(`逐光：奖励 ${godWar.cur_reward ?? 0}/${godWar.max_reward ?? 0} · ${formatTime(godWar.schedule_end)}结束`)
-  }
-  return lines.join('\n')
-}
-
-function formatCharacters(data = {}) {
-  const list = Array.isArray(data.characters) ? data.characters : []
-  if (list.length === 0) {
-    return '该账号暂无角色数据。'
-  }
-  const lines = [`=== 崩坏3 角色（${list.length}） ===`]
-  const shown = list.slice(0, 12)
-  for (const item of shown) {
-    const character = item.character || {}
-    const avatar = character.avatar || {}
-    const weapon = character.weapon || {}
-    const stigmata = Array.isArray(character.stigmatas) ? character.stigmatas : []
-    const elf = character.elf || {}
-    const attribute = ATTRIBUTE_MAP[Number(avatar.attribute_id)] || ''
-    const parts = [
-      `Lv.${avatar.level ?? '?'}`,
-      avatar.name || '未知女武神',
-      attribute ? `[${attribute}]` : '',
-      `★${avatar.star ?? '?'}`,
-    ]
-    const equip = []
-    if (weapon?.name) equip.push(`武:${weapon.name}`)
-    if (stigmata.length) equip.push(`圣:${stigmata.map(s => s.name).join('/')}`)
-    if (elf?.name) equip.push(`偶:${elf.name}`)
-    let line = parts.filter(Boolean).join(' ')
-    if (equip.length) line += `\n   ${equip.join(' ')}`
-    lines.push(line)
-  }
-  if (list.length > shown.length) {
-    lines.push(`...共 ${list.length} 名角色`)
-  }
-  return lines.join('\n')
-}
-
-function formatAbyss(data = {}, title = '深渊') {
-  const reports = Array.isArray(data.reports) ? data.reports : []
-  if (reports.length === 0) {
-    return `=== 崩坏3 ${title} ===\n暂无数据。`
-  }
-  const lines = [`=== 崩坏3 ${title} ===`]
-  for (const report of reports.slice(0, 3)) {
-    const boss = report.boss || {}
-    const lineup = Array.isArray(report.lineup) ? report.lineup : []
-    lines.push('')
-    lines.push(`BOSS：${boss.name || '未知'} · 分数 ${report.score ?? 0} · ${formatTime(report.updated_time_second)}`)
-    if (lineup.length) {
-      lines.push(`阵容：${lineup.map(a => a.name).join(' / ')}`)
-    }
-  }
-  return lines.join('\n')
-}
-
-function formatBattleField(data = {}) {
-  const reports = Array.isArray(data.reports) ? data.reports : []
-  if (reports.length === 0) {
-    return '=== 崩坏3 记忆战场 ===\n暂无数据。'
-  }
-  const lines = ['=== 崩坏3 记忆战场 ===']
-  for (const report of reports.slice(0, 2)) {
-    lines.push('')
-    lines.push(`排名 ${report.rank ?? '?'} · 前${report.ranking_percentage ?? '?'}% · ${battleAreaLabel(report.area)} · 总分 ${report.score ?? 0}`)
-    for (const info of Array.isArray(report.battle_infos) ? report.battle_infos : []) {
-      const lineup = Array.isArray(info.lineup) ? info.lineup : []
-      const elf = info.elf || {}
-      const squad = [...(elf?.name ? [elf.name] : []), ...lineup.map(a => a.name)]
-      if (squad.length) {
-        lines.push(`  队伍：${squad.join(' / ')}`)
-      }
-    }
-  }
-  return lines.join('\n')
-}
-
-function formatGodWar(data = {}) {
-  const records = Array.isArray(data.records) ? data.records : []
-  if (records.length === 0) {
-    return '=== 崩坏3 逐光 ===\n暂无数据。'
-  }
-  const lines = ['=== 崩坏3 逐光（往世乐土） ===']
-  for (const record of records.slice(0, 5)) {
-    const main = record.main_avatar || {}
-    const support = Array.isArray(record.support_avatars) ? record.support_avatars : []
-    lines.push(`难度 ${record.punish_level ?? '?'} · 分数 ${record.score ?? 0} · Lv.${record.level ?? '?'} · ${formatTime(record.settle_time_second)}`)
-    const squad = [main.name, ...support.map(a => a.name)].filter(Boolean)
-    if (squad.length) {
-      lines.push(`  阵容：${squad.join(' / ')}`)
-    }
-  }
-  return lines.join('\n')
 }
 
 function avatarItem(avatar = {}, extra = {}) {
@@ -249,21 +81,6 @@ function avatarItem(avatar = {}, extra = {}) {
   if (extra.level) tagParts.push(`Lv.${extra.level}`)
   if (attribute) tagParts.push(attribute)
   return { name: avatar.name || '未知', img, tag: tagParts.filter(Boolean).join(' ') }
-}
-
-function buildIndexStats(data = {}) {
-  const role = data.role || {}
-  const stats = data.stats || {}
-  return [
-    { label: '等级', value: role.level ?? '?' },
-    { label: '活跃天数', value: stats.active_day_number ?? 0 },
-    { label: '成就', value: stats.achievement_number ?? 0 },
-    { label: '女武神', value: stats.armor_number ?? 0 },
-    { label: 'SSS装甲', value: stats.sss_armor_number ?? 0 },
-    { label: '武器', value: stats.weapon_number ?? 0 },
-    { label: '圣痕', value: stats.stigmata_number ?? 0 },
-    { label: '深渊', value: stats.new_abyss?.level ?? '?' },
-  ]
 }
 
 function buildCharactersCard(data = {}) {
@@ -386,15 +203,15 @@ function buildHelp() {
     '=== 崩坏3 查询插件 ===',
     '',
     '【战绩查询】（主人配置一次公共 Cookie，群友只凭 UID 即可查询）',
-    '#崩坏3cookie <完整Cookie>　　主人配置公共 Cookie',
-    '#崩坏3cookie <UID> <Cookie>　为指定 UID 配置专用 Cookie',
+    '#崩坏3cookie <完整Cookie>　　主人配置公共 Cookie（仅限私聊）',
+    '#崩坏3cookie <UID> <Cookie>　为指定 UID 配置专用 Cookie（仅限私聊）',
     '#崩坏3绑定 / #崩坏3绑定 <UID>　按 Cookie 账号自动绑定 / 手动指定 UID',
     '#崩坏3切换 <UID>　　　　　　切换查询 UID',
     '#崩坏3当前　　　　　　　　　查看当前 UID',
     '#崩坏3解绑　　　　　　　　　解除绑定',
     '（已 #绑定Cookie 时可不绑定 UID，直接查询将自动使用 Cookie 账号）',
     '',
-    '#崩坏3面板　　总览（等级/收藏/深渊/战场）',
+    '#崩坏3面板　　总览卡片（与玩家卡片同模板）',
     '#崩坏3体力 / #崩坏3便笺　实时便签卡片（体力/训练/深渊/战场/乐土）',
     '#崩坏3角色　　　　　　　拥有的女武神列表（Cookie 账号）',
     '#崩坏3角色 <角色名>　　　角色面板（大头像/装备/六维）',
@@ -421,7 +238,7 @@ function buildHelp() {
     '#崩坏3角色图 <名字/别名>　　角色立绘 + 背景图 + 角色档案',
     '#崩坏3角色 <角色名>　　　　角色面板（大头像/装备/六维，仿喵喵风格）',
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
-    '  例：#崩坏3伤害 炎律 300 20 100 200',
+    '  参数：攻击 倍率% 增伤% 暴击率% 暴击伤害% 防御 抗性%，例：#崩坏3伤害 炎律 300 20 100 200',
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
@@ -439,6 +256,21 @@ function isMaster(e = {}) {
   return e?.isMaster === true
 }
 
+/** UID 脱敏：保留前 3 位与后 2 位，避免群聊/日志出现完整账号 */
+function maskUid(uid = '') {
+  const text = String(uid || '')
+  if (text.length <= 5) return text || '默认'
+  return `${text.slice(0, 3)}****${text.slice(-2)}`
+}
+
+/** 回复渲染结果；渲染彻底失败时回退文字，避免把 null 塞进消息段 */
+function replyMysCard(e, img) {
+  if (!img) {
+    return e.reply('制图失败，请稍后再试。')
+  }
+  return e.reply([img])
+}
+
 export class Bh3Plugin extends plugin {
   constructor() {
     super({
@@ -454,7 +286,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(切换|切换uid|切换UID)\\s+(\\d{5,12})$`, fnc: 'switchUid' },
         { reg: `^${PREFIX}(当前|当前uid|当前UID|我的uid|查看uid)\\s*$`, fnc: 'showCurrentUid' },
         { reg: `^${PREFIX}解绑\\s*$`, fnc: 'unbindUid' },
-        { reg: `^${PREFIX}cookie(\\s+(\\d{5,12}))?(\\s+[\\s\\S]+)?$`, fnc: 'setCookie' },
+        { reg: `^${PREFIX}cookie(\\s+(\\d{5,12}))?(\\s+[\\s\\S]+)?$`, fnc: 'setCookie', log: false },
         { reg: `^${PREFIX}(伤害|伤害计算)\\s+([\\s\\S]+)$`, fnc: 'damageCommand' },
         { reg: `^${PREFIX}(角色图|立绘|背景图|图鉴卡)\\s+([\\s\\S]+)$`, fnc: 'characterArtCommand' },
         { reg: `^${PREFIX}角色列表(?:\\s+(\\d{5,12}))?$`, fnc: 'showCharacters' },
@@ -465,8 +297,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(面板|总览|我的|主页)(\\s+(\\d{5,12}))?$`, fnc: 'showIndex' },
         // ===== honkai-mys 移植指令(需在校验最宽泛的 #崩坏3 之前) =====
         { reg: `^${PREFIX}(体力|便签|便笺|实时便签|实时便笺)(?=$|@|[\\s\\d])`, fnc: 'mysNote', log: false },
-        { reg: `^${PREFIX}(便笺|体力)(\\s+(\\d{5,12}))?$`, fnc: 'showNote' },
-        { reg: `^${PREFIX}角色(?=$|@|[\\s]+\\d{6,10})`, fnc: 'mysChara', log: false },
+        { reg: `^${PREFIX}角色(?=$|@|(?:\\s+\\d{6,10})\\s*$)`, fnc: 'mysChara', log: false },
         { reg: `^${PREFIX}(深渊战报|战场战报)(?=$|[\\s\\d])`, fnc: 'mysBranchReport', log: false },
         { reg: `^${PREFIX}(一周成绩单|成绩单)(?=$|[\\s\\d])`, fnc: 'mysWeekly', log: false },
         { reg: `^${PREFIX}(舰长战报|战报)(?=$|[\\s\\d])`, fnc: 'mysReport', log: false },
@@ -569,6 +400,10 @@ export class Bh3Plugin extends plugin {
     if (!isMaster(e)) {
       return e.reply('仅 Bot 主人可以配置 Cookie。')
     }
+    // Cookie 等同账号凭据：群聊中的消息可能被平台留存或他人翻看，改为私聊提交
+    if (e.isGroup) {
+      return e.reply('为保护账号安全，请在与 Bot 的私聊中发送 #崩坏3cookie <完整Cookie>，不要在群里发送。')
+    }
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}cookie(\\s+(\\d{5,12}))?(\\s+[\\s\\S]+)?$`))
     const uid = match?.[3] || ''
     const cookie = String(match?.[4] || '').trim()
@@ -580,9 +415,9 @@ export class Bh3Plugin extends plugin {
       if (roles.length === 0) {
         return e.reply('Cookie 有效，但未找到崩坏3 角色，请确认账号已开通崩坏3 战绩。')
       }
-      const names = roles.map(role => `${role.nickname}(${role.game_uid})`).join('、')
       setCookie(uid, cookie)
-      return e.reply(`Cookie 已保存${uid ? `（UID ${uid}）` : '（默认）'}，检测到角色：${names}`)
+      // 不回显昵称与完整 game_uid，避免群聊/日志泄露账号信息
+      return e.reply(`Cookie 已保存${uid ? `（UID ${maskUid(uid)}）` : '（默认）'}，检测到 ${roles.length} 个崩坏3角色。`)
     } catch (error) {
       return e.reply(`Cookie 校验失败：${error.message}`)
     }
@@ -613,11 +448,14 @@ export class Bh3Plugin extends plugin {
    * @returns {Promise<{uid:string,cookie:string}>}
    */
   async resolveUid(e, explicitUid = '') {
-    const uid = explicitUid || getBindUid(e.user_id)
+    // 显式 UID 可能来自正则的「带空格」捕获组，这里统一去掉空白
+    const uid = String(explicitUid || '').trim() || getBindUid(e.user_id)
     if (uid) {
+      // 共享库(MysUsers)里的 ck 属于其他用户，仅主人可代为读取，避免越权查询他人账号
+      const externalCk = isMaster(e) ? await getExternalCk(uid) : ''
       const cookie = getCookie(uid)
         || getCookie('')
-        || await getExternalCk(uid)
+        || externalCk
         || this.getCookieFromUser(e, uid)
       return { uid: String(uid), cookie }
     }
@@ -652,27 +490,28 @@ export class Bh3Plugin extends plugin {
   async showIndex(e) {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(面板|总览|我的|主页)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uid, cookie) => {
-      const data = await recordRequest('/index', uid, {}, cookie)
-      return this.replyWithCard(e, {
-        title: '崩坏3 面板',
-        subtitle: `UID ${uid}`,
-        text: formatIndex(data),
-        stats: buildIndexStats(data),
-        portrait: data.role?.AvatarUrl || '',
-      })
-    }, match?.[4] || '')
-  }
-
-  async showNote(e) {
-    const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(便笺|体力)(\\s+(\\d{5,12}))?$`))
-    return this.withUid(e, async (uid, cookie) => {
-      const data = await recordRequest('/note', uid, {}, cookie)
-      return this.replyWithCard(e, {
-        title: '崩坏3 实时便笺',
-        subtitle: `UID ${uid}`,
-        text: formatNote(data),
-      })
-    }, match?.[4] || '')
+      const index = await recordRequest('/index', uid, {}, cookie)
+      // 与 #崩坏3 玩家卡片共用 bh3card 模板，顺带补齐战报数据；单项失败不影响主卡片
+      const [weekly, newAbyss, oldAbyss, battle] = await Promise.allSettled([
+        recordRequest('/weeklyReport', uid, {}, cookie),
+        recordRequest('/newAbyssReport', uid, {}, cookie),
+        recordRequest('/latestOldAbyssReport', uid, {}, cookie),
+        recordRequest('/battleFieldReport', uid, {}, cookie),
+      ])
+      const pick = result => (result.status === 'fulfilled' ? result.value : null)
+      const raw = {
+        index,
+        weeklyReport: pick(weekly),
+        newAbyssReport: pick(newAbyss),
+        latestOldAbyssReport: pick(oldAbyss),
+        battleFieldReport: pick(battle),
+      }
+      const img = await this.renderMysHtml(
+        'html/bh3card',
+        buildIndexCard(raw, { uid, server: index.role?.region || '' }),
+      )
+      return replyMysCard(e, img)
+    }, String(match?.[4] || '').trim())
   }
 
   /** #崩坏3更新角色库：主人手动刷新女武神数据库（启动时也会自动检查更新） */
@@ -737,6 +576,7 @@ export class Bh3Plugin extends plugin {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(深渊|超弦)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uidValue, cookie) => {
       const cards = []
+      const errors = []
       for (const [endpoint, label] of [
         ['/newAbyssReport', '超弦空间'],
         ['/latestOldAbyssReport', '量子奇点'],
@@ -744,11 +584,15 @@ export class Bh3Plugin extends plugin {
         try {
           const report = await recordRequest(endpoint, uidValue, {}, cookie)
           cards.push(buildAbyssCard(report, label))
-        } catch {
-          // 该模式对该等级账号不可用时跳过
+        } catch (error) {
+          // 该模式对该等级账号不可用时跳过，但保留错误用于区分「无数据」与「查询失败」
+          errors.push(error)
         }
       }
       const text = cards.map(card => card.text).filter(Boolean).join('\n')
+      if (!text && errors.length > 0) {
+        return e.reply(`深渊查询失败：${errors[0].message}`)
+      }
       const avatarGroups = cards.flatMap(card => card.avatarGroups)
       return this.replyWithCard(e, {
         title: '崩坏3 深渊',
@@ -793,10 +637,14 @@ export class Bh3Plugin extends plugin {
     const rest = String(match?.[3] || '').trim()
     const tokens = rest.split(/\s+/).filter(Boolean)
     if (tokens.length < 1) {
-      return e.reply('用法：#崩坏3伤害 <角色名> [攻击力] [技能倍率%] [增伤%] [暴击率%] [暴击伤害%] [防御]\n攻击力可省略，省略时自动使用角色图鉴基础攻击。\n示例：#崩坏3伤害 薪炎之律者 300 50 100 150')
+      return e.reply('用法：#崩坏3伤害 <角色名> [攻击力] [技能倍率%] [增伤%] [暴击率%] [暴击伤害%] [防御] [抗性%]\n攻击力可省略，省略时自动使用角色图鉴基础攻击。\n示例：#崩坏3伤害 薪炎之律者 300 50 100 150')
     }
     const name = tokens[0]
     const numbers = tokens.slice(1).map(token => Number(String(token).replace(/%/g, '')))
+    const invalidIndex = numbers.findIndex(value => !Number.isFinite(value))
+    if (invalidIndex !== -1) {
+      return e.reply(`参数「${tokens[invalidIndex + 1]}」不是有效数字。\n用法：#崩坏3伤害 <角色名> [攻击力] [技能倍率%] [增伤%] [暴击率%] [暴击伤害%] [防御] [抗性%]`)
+    }
     const character = findCharacter(name)
     if (!character) {
       const suggestions = searchCharacters(name).slice(0, 5)
@@ -816,6 +664,7 @@ export class Bh3Plugin extends plugin {
       critRate: numbers[3] ?? 100,
       critDamage: numbers[4] ?? 150,
       defense: numbers[5] ?? (character.element === '物理' ? 500 : 0),
+      resistance: numbers[6] ?? 0,
       physical: character.element === '物理',
     })
     const lines = [
@@ -1031,9 +880,14 @@ export class Bh3Plugin extends plugin {
 
   /** 获取目标用户(@指定的用户或自己) */
   async getMysTargetUser(e = {}) {
-    if (e.at && /^\d+$/.test(String(e.at))) {
+    const at = String(e.at || '')
+    if (at && /^\d+$/.test(at)) {
+      // 允许 @自己；@他人 仅限主人，避免任意群友读取他人的手账/抽卡记录
+      if (at !== String(e.user_id) && !isMaster(e)) {
+        throw new InfoError('只能查询自己的账号；如需查询他人，请让 Bot 主人操作。')
+      }
       try {
-        const atUser = await e.runtime.NoteUser.create(String(e.at))
+        const atUser = await e.runtime.NoteUser.create(at)
         if (atUser) return atUser
       } catch (err) {
         globalThis.logger?.error?.('[bh3] 获取@用户数据失败', err)
@@ -1055,7 +909,8 @@ export class Bh3Plugin extends plugin {
       return { uid: role.game_role_id, server: role.region, cookie, nickname: role.nickname }
     }
 
-    const uidMatch = text.match(/\d{6,10}/)
+    // UID 需独立成段（前后不能再接数字），避免 11 位 UID 被截断、5 位 UID 被忽略
+    const uidMatch = text.match(/(?<!\d)\d{5,12}(?!\d)/)
     const serverMatch = text.match(/[^\d\s]+/)
 
     // 未提供uid: 使用绑定的Cookie账号
@@ -1091,13 +946,24 @@ export class Bh3Plugin extends plugin {
       return seg?.image ? seg.image(imgPath) : imgPath
     } catch (err) {
       globalThis.logger?.warn?.(`[bh3] 高分辨率渲染失败，回退框架渲染: ${err.message}`)
-      try {
-        return await this.renderImg('bh3-plugin', `html/${name}`, data, { retType: 'base64', scale: DEVICE_SCALE })
-      } catch (fallbackError) {
-        globalThis.logger?.error?.('[bh3] renderImg 亦失败', fallbackError)
-        return e_runtimeRender(this.e, `html/${name}`, data)
-      }
     }
+
+    let fallback = null
+    try {
+      fallback = await this.renderImg('bh3-plugin', `html/${name}`, data, { retType: 'base64', scale: DEVICE_SCALE })
+    } catch (fallbackError) {
+      globalThis.logger?.error?.('[bh3] renderImg 失败', fallbackError)
+    }
+    // renderImg 截图失败时返回 false 而不是抛错，必须显式判空后再走 runtime 兜底
+    if (fallback) return fallback
+
+    try {
+      const runtimeImg = await e_runtimeRender(this.e, `html/${name}`, data)
+      if (runtimeImg) return runtimeImg
+    } catch (runtimeError) {
+      globalThis.logger?.error?.('[bh3] runtime.render 亦失败', runtimeError)
+    }
+    return null
   }
 
   /** #崩坏3 / #bh3 玩家卡片 */
@@ -1116,7 +982,7 @@ export class Bh3Plugin extends plugin {
       return e.reply(err.message, false, { at: true })
     }
     const img = await this.renderMysHtml('html/bh3card', buildIndexCard(raw, role))
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3角色 / #bh3角色 拥有的女武神列表 */
@@ -1140,7 +1006,7 @@ export class Bh3Plugin extends plugin {
       return e.reply(err.message, false, { at: true })
     }
     const img = await this.renderMysHtml('html/bh3chara', buildMysCharaCard(raw, role))
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3体力 / #崩坏3便笺 实时便签(honkai-mys 卡片) */
@@ -1159,7 +1025,7 @@ export class Bh3Plugin extends plugin {
       return e.reply(err.message, false, { at: true })
     }
     const img = await this.renderMysHtml('html/bh3note', buildNoteCard(raw, role))
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3战报 舰长战报 */
@@ -1179,7 +1045,7 @@ export class Bh3Plugin extends plugin {
     }
     saveReports(role.uid, extractReportHistory(raw))
     const img = await this.renderMysHtml('html/bh3report', buildReportCard(raw, role))
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3深渊战报 / #崩坏3战场战报(更多近期记录) */
@@ -1202,7 +1068,7 @@ export class Bh3Plugin extends plugin {
     const history = getReports(role.uid)
     const data = isAbyss ? buildMysAbyssCard(raw, role, history) : buildMysBattleCard(raw, role, history)
     const img = await this.renderMysHtml(isAbyss ? 'html/bh3abyss' : 'html/bh3battle', data)
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3一周成绩单(当前 + 本地历史) */
@@ -1222,7 +1088,7 @@ export class Bh3Plugin extends plugin {
     }
     saveReports(role.uid, extractReportHistory(raw))
     const img = await this.renderMysHtml('html/bh3weekly', buildWeeklyCard(raw, getReports(role.uid), role))
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3手帐 水晶手账 */
@@ -1257,7 +1123,7 @@ export class Bh3Plugin extends plugin {
     const data = buildFinanceCard(raw)
     data.nickname = nickname || '舰长'
     const img = await this.renderMysHtml('html/bh3finance', data)
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 
   /** 记录查询上下文: 角色 + stoken + 自助查询接口 */
@@ -1361,7 +1227,7 @@ export class Bh3Plugin extends plugin {
         avatarUrl,
       })
       const img = await this.renderMysHtml('html/bh3gacha', data)
-      return e.reply([img])
+      return replyMysCard(e, img)
     }
 
     const data = buildRecordCard({
@@ -1374,7 +1240,7 @@ export class Bh3Plugin extends plugin {
       statOnly,
     })
     const img = await this.renderMysHtml('html/bh3record', data)
-    return e.reply([img])
+    return replyMysCard(e, img)
   }
 }
 
