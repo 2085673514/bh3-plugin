@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3 圣痕套装</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px;
+    padding: 26px 28px 30px;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #4a1840;
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+  }
+  #container { display: flex; flex-direction: column; gap: 16px; }
+
+  .header {
+    display: flex; gap: 20px; padding: 20px 22px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,.74), rgba(255,255,255,.4));
+    border: 1px solid rgba(214,77,148,.35);
+    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+  }
+  .banner {
+    width: 168px; height: 168px; flex: none; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(246,222,244,.75));
+    border: 1px solid rgba(214,77,148,.28);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .banner img { width: 100%; height: 100%; object-fit: contain; }
+  .banner.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
+  .head-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .kind {
+    align-self: flex-start; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+    color: #fff; background: linear-gradient(135deg, #d64d94, #b23ac4);
+  }
+  .title {
+    margin-top: 10px; font-size: 26px; font-weight: 900; color: #7d2358; line-height: 1.28;
+    letter-spacing: .5px;
+  }
+  .stars { margin-top: 8px; font-size: 18px; color: #f0a12a; letter-spacing: 3px; }
+  .tags { margin-top: 10px; display: flex; gap: 7px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 2px 9px; border-radius: 999px; color: #8e2f68;
+    background: rgba(255,255,255,.62); border: 1px solid rgba(214,77,148,.35);
+  }
+  .uid { margin-top: 10px; font-size: 11px; color: #a95f92; }
+
+  .panel {
+    padding: 18px 20px; border-radius: 20px;
+    background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.34));
+    border: 1px solid rgba(214,77,148,.3);
+    box-shadow: 0 8px 24px rgba(160,80,160,.14);
+  }
+  .sec-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #8e2f68; }
+  .sec-title i { width: 10px; height: 10px; border-radius: 3px; background: #d64d94; transform: rotate(45deg); }
+  .sec-title .hint { margin-left: auto; font-size: 11px; font-weight: 400; color: #a95f92; }
+
+  .members { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .member {
+    position: relative; padding: 14px 12px 12px; border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255,255,255,.8), rgba(255,255,255,.45));
+    border: 1px solid rgba(214,77,148,.28);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .member .pos {
+    position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: 700; color: #fff;
+    padding: 2px 8px; border-radius: 999px; background: linear-gradient(135deg, #d64d94, #b23ac4);
+  }
+  .member img { width: 92px; height: 92px; border-radius: 12px; object-fit: contain;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.22); }
+  .member .who { font-size: 12px; font-weight: 700; color: #5d1c47; }
+  .member .nm { font-size: 10px; color: #a95f92; text-align: center; line-height: 1.35; }
+  .member .attrs { margin-top: 4px; width: 100%; display: flex; flex-direction: column; gap: 3px; }
+  .member .attr { display: flex; align-items: baseline; font-size: 11px; }
+  .member .attr .k { width: 34px; flex: none; color: #a95f92; }
+  .member .attr .v { font-weight: 800; color: #b23ac4; }
+  .member .attr .s { margin-left: auto; font-size: 9px; color: #a95f92; }
+  .member .chip { font-size: 10px; color: #8e2f68; background: rgba(255,255,255,.7); border-radius: 999px; padding: 1px 8px; }
+  .member .word { font-size: 10px; color: #94507d; line-height: 1.45; text-align: center; }
+
+  .totals { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .total {
+    min-width: 110px; padding: 10px 14px; border-radius: 14px;
+    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.22);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .total .k { font-size: 11px; color: #a95f92; }
+  .total .v { font-size: 20px; font-weight: 900; color: #b23ac4; line-height: 1; }
+
+  .skills { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .skill { display: flex; gap: 12px; }
+  .skill img { width: 40px; height: 40px; flex: none; border-radius: 10px; object-fit: contain;
+    border: 1px solid rgba(214,77,148,.25); background: rgba(255,255,255,.6); }
+  .skill .body { flex: 1; min-width: 0; }
+  .skill .name { font-size: 13px; font-weight: 700; color: #5d1c47; }
+  .skill .desc { margin-top: 4px; font-size: 12px; color: #7a4a8e; line-height: 1.6; white-space: pre-wrap; }
+
+  .footer { text-align: center; font-size: 11px; color: #94507d; letter-spacing: .3px; }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+  <div id="container">
+    <div class="header">
+      <div class="banner{{if !icon}} blank{{/if}}">
+        {{if icon}}<img src="{{icon}}" alt="{{title}}">{{/if}}
+      </div>
+      <div class="head-info">
+        <span class="kind">{{kindLabel}}</span>
+        <div class="title">{{title}}</div>
+        {{if stars}}<div class="stars">{{stars}}</div>{{/if}}
+        {{if tags.length}}
+        <div class="tags">
+          {{each tags tag}}<span class="tag">{{tag}}</span>{{/each}}
+        </div>
+        {{/if}}
+        <div class="uid">共 {{count}} 件 · 上/中/下位</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sec-title"><i></i>套装成员 <span class="hint">共 {{count}} 件</span></div>
+      <div class="members">
+        {{each pieces piece}}
+        <div class="member">
+          <span class="pos">{{piece.position}}位</span>
+          {{if piece.icon}}<img src="{{piece.icon}}" alt="{{piece.character}}">{{/if}}
+          <div class="who">{{piece.character}}</div>
+          <div class="nm">{{piece.title}}</div>
+          <div class="attrs">
+            {{each piece.attrs attr}}
+            <div class="attr"><span class="k">{{attr.name}}</span><span class="v">{{attr.value}}</span>{{if attr.score}}<span class="s">评 {{attr.score}}</span>{{/if}}</div>
+            {{/each}}
+          </div>
+          {{if piece.subTag}}<span class="chip">{{piece.subTag}}</span>{{/if}}
+          {{if piece.setTag}}<div class="word">{{piece.setTag}}</div>{{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sec-title"><i></i>三件合计</div>
+      <div class="totals">
+        {{each totals total}}
+        <div class="total"><span class="k">{{total.name}}</span><span class="v">{{total.value}}</span></div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{if pieces[0].skill || pieces[1].skill || pieces[2].skill}}
+    <div class="panel">
+      <div class="sec-title"><i></i>单件技能</div>
+      <div class="skills">
+        {{each pieces piece}}
+        {{if piece.skill}}
+        <div class="skill">
+          {{if piece.icon}}<img src="{{piece.icon}}" alt="{{piece.character}}">{{/if}}
+          <div class="body">
+            <div class="name">{{piece.character}} · {{piece.position}}位</div>
+            <div class="desc">{{piece.skill}}</div>
+          </div>
+        </div>
+        {{/if}}
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    <div class="footer">{{footer}}</div>
+  </div>
+</body>
+</html>

@@ -5,7 +5,10 @@ import {
 import {
   buildWikiDetailCard,
   buildWikiListCard,
+  buildWikiSetCard,
   formatWikiDetail,
+  stigmaPosition,
+  stigmaSetName,
   wikiDetail,
   wikiSearch,
 } from '../lib/wiki.js'
@@ -251,7 +254,7 @@ function buildHelp() {
     '#崩坏3角色图鉴 <名字>　　　角色图鉴',
     '#崩坏3武器图鉴 <名字>　　　武器图鉴',
     '#崩坏3圣痕图鉴 <名字>　　　圣痕图鉴',
-    '#崩坏3图鉴详情 <编号>　　　查看指定条目（图文详情）',
+    '#崩坏3图鉴详情 <编号>　　　查看指定条目（圣痕自动三件套）',
     '',
     '提示：以上命令前缀也可使用「崩三」或「bbb」。',
   ].join('\n')
@@ -862,6 +865,57 @@ export class Bh3Plugin extends plugin {
     return this.searchWiki(e, keyword, type)
   }
 
+  /**
+   * 圣痕上/中/下是三件套，能凑齐两件及以上时优先出一张套装卡
+   * @returns {Promise<object|null>} 已发送图片时返回消息对象，否则 null
+   */
+  async replyWikiSet(e, parsed) {
+    if (parsed?.kind !== 'stigmata') return null
+    const setName = stigmaSetName(parsed)
+    const position = stigmaPosition(parsed)
+    if (!setName || !position) return null
+
+    const ids = new Set([String(parsed.id)])
+    for (const relative of parsed.relatives || []) {
+      const id = String(relative?.url || '').match(/\/content\/(\d+)\//)?.[1]
+      if (id) ids.add(id)
+    }
+    // 少数套装没有 relatives，退化成按标题里的套装名搜索
+    if (ids.size < 3) {
+      const token = String(parsed.title || '').split(/[·・]/).pop().replace(/[（(].*$/, '').trim()
+      if (token) {
+        const { list } = await wikiSearch(token, 1).catch(() => ({ list: [] }))
+        for (const item of list) {
+          if (/[（(](上|中|下)[)）]\s*$/.test(item.title || '')) ids.add(String(item.id))
+        }
+      }
+    }
+
+    const pieces = [parsed]
+    const seen = new Set([position])
+    for (const id of ids) {
+      if (pieces.length >= 3) break
+      if (String(id) === String(parsed.id)) continue
+      const detail = await wikiDetail(id).catch(() => null)
+      if (!detail) continue
+      const card = buildWikiDetailCard(detail)
+      if (stigmaSetName(card) !== setName) continue
+      const cardPosition = stigmaPosition(card)
+      if (!cardPosition || seen.has(cardPosition)) continue
+      seen.add(cardPosition)
+      pieces.push(card)
+    }
+    if (pieces.length < 2) return null
+
+    const setCard = buildWikiSetCard(pieces, { setName })
+    const img = await this.renderMysHtml('html/bh3wikiset', setCard, {
+      deviceScaleFactor: 1.8,
+      quality: 84,
+      waitImages: 6000,
+    })
+    return img ? replyMysCard(e, img) : null
+  }
+
   async wikiDetailCommand(e) {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}图鉴详情\\s+(\\d+)\\s*$`))
     const id = match?.[2] || ''
@@ -879,6 +933,8 @@ export class Bh3Plugin extends plugin {
         parent: meta?.parent || '',
         tags: meta?.tags || [],
       })
+      const setReply = await this.replyWikiSet(e, data)
+      if (setReply) return setReply
       const img = await this.renderMysHtml('html/bh3wikidetail', data, {
         deviceScaleFactor: 1.8,
         quality: 84,
@@ -972,6 +1028,8 @@ export class Bh3Plugin extends plugin {
           parent: results[0].parent,
           tags: results[0].tags,
         })
+        const setReply = await this.replyWikiSet(e, data)
+        if (setReply) return setReply
         const img = await this.renderMysHtml('html/bh3wikidetail', data, {
           deviceScaleFactor: 1.8,
           quality: 84,
@@ -986,6 +1044,21 @@ export class Bh3Plugin extends plugin {
           portrait: detail.icon || '',
           links: detail.bbs_url ? [detail.bbs_url] : [],
         })
+      }
+
+      // 搜索的是套装名时，2~3 件圣痕直接展示套装卡
+      const pieceResults = results.filter(item => /[（(](上|中|下)[)）]\s*$/.test(item.title || ''))
+      if (pieceResults.length >= 2 && pieceResults.length <= 3) {
+        const detail = await wikiDetail(pieceResults[0].id).catch(() => null)
+        if (detail) {
+          const piece = buildWikiDetailCard(detail, {
+            channel: pieceResults[0].channel,
+            parent: pieceResults[0].parent,
+            tags: pieceResults[0].tags,
+          })
+          const setReply = await this.replyWikiSet(e, piece)
+          if (setReply) return setReply
+        }
       }
 
       const data = buildWikiListCard(results, { keyword, type, page, total })
