@@ -3,6 +3,8 @@ import {
   recordRequest,
 } from '../lib/api.js'
 import {
+  buildWikiDetailCard,
+  buildWikiListCard,
   formatWikiDetail,
   wikiDetail,
   wikiSearch,
@@ -245,11 +247,11 @@ function buildHelp() {
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
-    '#崩坏3图鉴 <关键词>　　　　搜索图鉴',
+    '#崩坏3图鉴 <关键词> [页码]　搜索图鉴（可翻页）',
     '#崩坏3角色图鉴 <名字>　　　角色图鉴',
     '#崩坏3武器图鉴 <名字>　　　武器图鉴',
     '#崩坏3圣痕图鉴 <名字>　　　圣痕图鉴',
-    '#崩坏3图鉴详情 <编号>　　　查看指定条目',
+    '#崩坏3图鉴详情 <编号>　　　查看指定条目（图文详情）',
     '',
     '提示：以上命令前缀也可使用「崩三」或「bbb」。',
   ].join('\n')
@@ -868,10 +870,25 @@ export class Bh3Plugin extends plugin {
       if (!detail?.id) {
         return e.reply('未找到该图鉴条目。')
       }
+      // 详情接口不带 ext 标签，按标题再搜一次补上频道/标签/星级
+      const meta = await wikiSearch(detail.title || id)
+        .then(result => result.list.find(item => String(item.id) === String(detail.id)))
+        .catch(() => null)
+      const data = buildWikiDetailCard(detail, {
+        channel: meta?.channel || '',
+        parent: meta?.parent || '',
+        tags: meta?.tags || [],
+      })
+      const img = await this.renderMysHtml('html/bh3wikidetail', data, {
+        deviceScaleFactor: 1.8,
+        quality: 84,
+        waitImages: 6000,
+      })
+      if (img) return replyMysCard(e, img)
       const text = formatWikiDetail(detail)
       return this.replyWithCard(e, {
         title: '崩坏3 图鉴',
-        subtitle: `条目 #${detail.id}`,
+        subtitle: `${data.kindLabel} #${detail.id}`,
         text,
         portrait: detail.icon || '',
         links: detail.bbs_url ? [detail.bbs_url] : [],
@@ -881,14 +898,25 @@ export class Bh3Plugin extends plugin {
     }
   }
 
-  async searchWiki(e, keyword = '', type = '') {
+  async searchWiki(e, inputKeyword = '', type = '') {
+    let keyword = String(inputKeyword || '').trim()
+    let page = 1
+    // 支持「#崩坏3图鉴 琪亚娜 2」翻页；只有倒数第一个词是纯数字时才当作页码
+    const pageMatch = keyword.match(/^(.*\S)\s+(\d{1,2})$/)
+    if (pageMatch) {
+      keyword = pageMatch[1].trim()
+      page = Math.max(1, Number(pageMatch[2]))
+    }
     if (!keyword) {
       return e.reply('请提供要查询的关键词，例如：#崩坏3图鉴 琪亚娜')
     }
     try {
       const dbHit = findCharacter(keyword)
       const searchKeyword = dbHit ? dbHit.name : keyword
-      let results = await wikiSearch(searchKeyword)
+      const { list, total } = await wikiSearch(searchKeyword, page)
+      const maxPage = Math.max(1, Math.ceil(total / 15))
+      let results = list
+      let typeMissing = false
       if (type) {
         const keywords = {
           角色图鉴: ['女武神', '角色'],
@@ -898,16 +926,58 @@ export class Bh3Plugin extends plugin {
           协同者图鉴: ['协同者'],
         }
         const filter = keywords[type] || []
-        const matched = results.filter(item => filter.some(word => item.channel?.includes(word) || item.parent?.includes(word)))
+        const pick = items => items.filter(item => filter.some(word => item.channel?.includes(word) || item.parent?.includes(word)))
+        let matched = pick(results)
+        // 当前页没有对应分类时，往后翻两页找，避免「角色图鉴 琪亚娜」被圣痕占满
+        if (matched.length === 0) {
+          for (const nextPage of [page + 1, page + 2]) {
+            if (nextPage > maxPage) break
+            const next = await wikiSearch(searchKeyword, nextPage)
+            const hit = pick(next.list)
+            if (hit.length > 0) {
+              matched = hit
+              page = nextPage
+              break
+            }
+          }
+        }
         if (matched.length > 0) {
           results = matched
+        } else {
+          typeMissing = true
         }
       }
-      if (results.length === 0) {
-        return e.reply(`未找到与「${keyword}」相关的图鉴内容。`)
+      // 完全匹配 / 前缀匹配排前面
+      const rank = item => {
+        if (item.title === searchKeyword) return 3
+        if (item.title.startsWith(searchKeyword)) return 2
+        if (item.title.includes(searchKeyword)) return 1
+        return 0
       }
+      results = results.slice().sort((a, b) => rank(b) - rank(a))
+
+      if (typeMissing) {
+        return e.reply(`没有找到「${keyword}」的${type}条目，可以试试只发 #崩坏3图鉴 ${keyword}。`)
+      }
+
+      if (results.length === 0) {
+        const pageText = page > 1 ? `（第 ${page} 页，共 ${maxPage} 页）` : ''
+        return e.reply(`未找到与「${keyword}」相关的图鉴内容${pageText}。`)
+      }
+
       if (results.length === 1) {
         const detail = await wikiDetail(results[0].id)
+        const data = buildWikiDetailCard(detail, {
+          channel: results[0].channel,
+          parent: results[0].parent,
+          tags: results[0].tags,
+        })
+        const img = await this.renderMysHtml('html/bh3wikidetail', data, {
+          deviceScaleFactor: 1.8,
+          quality: 84,
+          waitImages: 6000,
+        })
+        if (img) return replyMysCard(e, img)
         const text = formatWikiDetail(detail)
         return this.replyWithCard(e, {
           title: '崩坏3 图鉴',
@@ -917,7 +987,16 @@ export class Bh3Plugin extends plugin {
           links: detail.bbs_url ? [detail.bbs_url] : [],
         })
       }
-      const lines = [`找到 ${results.length} 条与「${keyword}」相关的内容：`, '']
+
+      const data = buildWikiListCard(results, { keyword, type, page, total })
+      const img = await this.renderMysHtml('html/bh3wikilist', data, {
+        deviceScaleFactor: 1.8,
+        quality: 84,
+        waitImages: 6000,
+      })
+      if (img) return replyMysCard(e, img)
+
+      const lines = [`找到 ${total} 条与「${keyword}」相关的内容（第 ${page}/${maxPage} 页）：`, '']
       for (const item of results.slice(0, 8)) {
         const channel = item.parent ? `${item.parent}/${item.channel}` : item.channel
         lines.push(`[${item.id}] ${item.title}${channel ? `（${channel}）` : ''}`)

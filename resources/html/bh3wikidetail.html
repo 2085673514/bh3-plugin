@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3 图鉴详情</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px;
+    padding: 26px 28px 30px;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #4a1840;
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+  }
+  #container { display: flex; flex-direction: column; gap: 16px; }
+
+  .header {
+    display: flex; gap: 20px; padding: 20px 22px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,.74), rgba(255,255,255,.4));
+    border: 1px solid rgba(214,77,148,.35);
+    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+  }
+  .banner {
+    width: 168px; height: 168px; flex: none; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(246,222,244,.75));
+    border: 1px solid rgba(214,77,148,.28);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .banner img { width: 100%; height: 100%; object-fit: contain; }
+  .banner.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
+  .head-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .kind {
+    align-self: flex-start; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+    color: #fff; background: linear-gradient(135deg, #d64d94, #b23ac4);
+  }
+  .title {
+    margin-top: 10px; font-size: 26px; font-weight: 900; color: #7d2358; line-height: 1.28;
+    letter-spacing: .5px;
+  }
+  .stars { margin-top: 8px; font-size: 18px; color: #f0a12a; letter-spacing: 3px; }
+  .tags { margin-top: 10px; display: flex; gap: 7px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 2px 9px; border-radius: 999px; color: #8e2f68;
+    background: rgba(255,255,255,.62); border: 1px solid rgba(214,77,148,.35);
+  }
+  .uid { margin-top: 10px; font-size: 11px; color: #a95f92; }
+
+  .panel {
+    padding: 18px 20px; border-radius: 20px;
+    background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.34));
+    border: 1px solid rgba(214,77,148,.3);
+    box-shadow: 0 8px 24px rgba(160,80,160,.14);
+  }
+  .sec-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #8e2f68; }
+  .sec-title i { width: 10px; height: 10px; border-radius: 3px; background: #d64d94; transform: rotate(45deg); }
+  .sec-title .hint { margin-left: auto; font-size: 11px; font-weight: 400; color: #a95f92; }
+
+  .fields { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }
+  .field { display: flex; gap: 8px; font-size: 13px; line-height: 1.5; }
+  .field .k { flex: none; color: #a95f92; }
+  .field .v { color: #5d1c47; font-weight: 600; }
+
+  .attrs { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .attr {
+    min-width: 96px; padding: 10px 14px; border-radius: 14px;
+    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.22);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .attr .k { font-size: 11px; color: #a95f92; }
+  .attr .v { font-size: 20px; font-weight: 900; color: #b23ac4; line-height: 1; }
+  .attr .score { font-size: 10px; color: #a95f92; }
+
+  .hex { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+  .hex-row { display: flex; align-items: center; gap: 10px; }
+  .hex-name { width: 78px; flex: none; font-size: 12px; color: #7a4a8e; }
+  .hex-bar { flex: 1; height: 8px; border-radius: 999px; background: rgba(214,77,148,.16); overflow: hidden; }
+  .hex-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d64d94, #b23ac4); }
+  .hex-val { width: 34px; flex: none; text-align: right; font-size: 12px; font-weight: 700; color: #8e2f68; }
+
+  .skills { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .skill { display: flex; gap: 12px; }
+  .skill img { width: 40px; height: 40px; flex: none; border-radius: 10px; object-fit: cover;
+    border: 1px solid rgba(214,77,148,.25); background: rgba(255,255,255,.6); }
+  .skill .body { flex: 1; min-width: 0; }
+  .skill .name { font-size: 14px; font-weight: 700; color: #5d1c47; }
+  .skill .desc { margin-top: 4px; font-size: 12px; color: #7a4a8e; line-height: 1.6; white-space: pre-wrap; }
+  .more { margin-top: 12px; font-size: 11px; color: #a95f92; text-align: right; }
+
+  .related { margin-top: 14px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .rel { width: 86px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .rel .ico { width: 64px; height: 64px; border-radius: 12px; object-fit: contain;
+    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.25); }
+  .rel .nm { font-size: 11px; color: #7a4a8e; text-align: center; line-height: 1.35; }
+
+  .gains { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .gain { font-size: 12px; line-height: 1.6; color: #5d1c47; }
+  .gain .k { color: #8e2f68; font-weight: 700; }
+  .gain .v { color: #7a4a8e; }
+
+  .desc { margin-top: 12px; font-size: 12px; color: #7a4a8e; line-height: 1.75; white-space: pre-wrap; }
+  .section-name { margin-top: 14px; font-size: 13px; font-weight: 700; color: #8e2f68; }
+  .section-text { margin-top: 6px; font-size: 12px; color: #7a4a8e; line-height: 1.7; white-space: pre-wrap; }
+
+  .footer { text-align: center; font-size: 11px; color: #94507d; letter-spacing: .3px; }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+  <div id="container">
+    <div class="header">
+      <div class="banner{{if !icon}} blank{{/if}}">
+        {{if icon}}<img src="{{icon}}" alt="{{title}}">{{/if}}
+      </div>
+      <div class="head-info">
+        <span class="kind">{{kindLabel}}</span>
+        <div class="title">{{title}}</div>
+        {{if stars}}<div class="stars">{{stars}}</div>{{/if}}
+        {{if tags.length}}
+        <div class="tags">
+          {{each tags tag}}<span class="tag">{{tag}}</span>{{/each}}
+        </div>
+        {{/if}}
+        {{if id}}<div class="uid">图鉴编号 #{{id}}</div>{{/if}}
+      </div>
+    </div>
+
+    {{if desc}}
+    <div class="panel">
+      <div class="sec-title"><i></i>简介</div>
+      <div class="desc">{{desc}}</div>
+    </div>
+    {{/if}}
+
+    {{if fields.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>基础信息 <span class="hint">共 {{fields.length}} 项</span></div>
+      <div class="fields">
+        {{each fields field}}
+        <div class="field"><span class="k">{{field.name}}</span><span class="v">{{field.value}}</span></div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if attrs.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>属性</div>
+      <div class="attrs">
+        {{each attrs attr}}
+        <div class="attr">
+          <span class="k">{{attr.name}}</span>
+          <span class="v">{{attr.value}}</span>
+          {{if attr.score}}<span class="score">评分 {{attr.score}}</span>{{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if hexagon.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>六维评级</div>
+      <div class="hex">
+        {{each hexagon row}}
+        <div class="hex-row">
+          <span class="hex-name">{{row.key}}</span>
+          <span class="hex-bar"><i style="width:{{row.value}}%"></i></span>
+          <span class="hex-val">{{row.value}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if skills.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>技能 / 效果{{if skillsTotal > skills.length}}<span class="hint">共 {{skillsTotal}} 条，仅展示前 {{skills.length}} 条</span>{{/if}}</div>
+      <div class="skills">
+        {{each skills skill}}
+        <div class="skill">
+          {{if skill.icon}}<img src="{{skill.icon}}" alt="{{skill.name}}">{{/if}}
+          <div class="body">
+            <div class="name">{{skill.name}}</div>
+            <div class="desc">{{skill.desc}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if relatives.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>套装 / 相关</div>
+      <div class="related">
+        {{each relatives rel}}
+        <div class="rel">
+          {{if rel.icon}}<img class="ico" src="{{rel.icon}}" alt="{{rel.name}}">{{else}}<div class="ico"></div>{{/if}}
+          <div class="nm">{{rel.name}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if gains.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>获取方式</div>
+      <div class="gains">
+        {{each gains gain}}
+        <div class="gain"><span class="k">{{gain.name}}</span>{{if gain.value}}：<span class="v">{{gain.value}}</span>{{/if}}</div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if sections.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>图鉴正文</div>
+      {{each sections section}}
+      {{if section.name}}<div class="section-name">{{section.name}}</div>{{/if}}
+      <div class="section-text">{{section.text}}</div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    <div class="footer">{{footer}}</div>
+  </div>
+</body>
+</html>

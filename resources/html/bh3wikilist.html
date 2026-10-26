@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3 图鉴搜索</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px;
+    padding: 26px 28px 30px;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #4a1840;
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+  }
+  #container { display: flex; flex-direction: column; gap: 16px; }
+
+  .header {
+    display: flex; align-items: center; gap: 18px;
+    padding: 18px 22px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.38));
+    border: 1px solid rgba(214,77,148,.35);
+    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+  }
+  .logo {
+    width: 60px; height: 60px; flex: none; border-radius: 16px;
+    background: linear-gradient(135deg, #d64d94, #b23ac4);
+    color: #fff; font-size: 24px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(178,58,196,.35);
+  }
+  .head-info { flex: 1; min-width: 0; }
+  .head-title { font-size: 24px; font-weight: 900; color: #7d2358; letter-spacing: 1px; }
+  .head-sub { margin-top: 7px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .kw { font-size: 13px; font-weight: 700; color: #8e2f68; }
+  .type {
+    font-size: 11px; padding: 2px 9px; border-radius: 999px; color: #a13570;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.4);
+  }
+  .page-box { flex: none; text-align: right; }
+  .page-num { font-size: 22px; font-weight: 900; color: #b23ac4; line-height: 1; }
+  .page-num small { font-size: 12px; font-weight: 400; color: #a95f92; }
+  .page-total { margin-top: 6px; font-size: 11px; color: #a95f92; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .item {
+    position: relative; padding: 12px 12px 14px; border-radius: 16px;
+    background: rgba(255,255,255,.58);
+    border: 1px solid rgba(214,77,148,.24);
+    box-shadow: 0 6px 18px rgba(160,80,160,.10);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .item .idx {
+    position: absolute; left: 10px; top: 9px;
+    font-size: 10px; font-weight: 700; color: #a95f92;
+  }
+  .item .icon-wrap {
+    width: 84px; height: 84px; border-radius: 14px; margin-top: 4px;
+    background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(246,222,244,.7));
+    border: 1px solid rgba(214,77,148,.25);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .item .icon { width: 100%; height: 100%; object-fit: contain; }
+  .item .icon.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
+  .item .title {
+    margin-top: 9px; font-size: 13px; font-weight: 700; color: #5d1c47; line-height: 1.35;
+    text-align: center; width: 100%;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 35px;
+  }
+  .item .channel {
+    margin-top: 7px; font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    color: #8e2f68; background: rgba(214,77,148,.12); border: 1px solid rgba(214,77,148,.3);
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .empty {
+    padding: 40px 0; text-align: center; font-size: 14px; color: #a95f92;
+    background: rgba(255,255,255,.5); border-radius: 18px; border: 1px dashed rgba(214,77,148,.35);
+  }
+
+  .footer {
+    margin-top: 4px; text-align: center; font-size: 11px; color: #94507d;
+    letter-spacing: .3px;
+  }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+  <div id="container">
+    <div class="header">
+      <div class="logo">鉴</div>
+      <div class="head-info">
+        <div class="head-title">崩坏3 图鉴</div>
+        <div class="head-sub">
+          <span class="kw">「{{keyword}}」</span>
+          {{if typeLabel}}<span class="type">{{typeLabel}}</span>{{/if}}
+          <span class="type">共 {{total}} 条</span>
+        </div>
+      </div>
+      <div class="page-box">
+        <div class="page-num">{{page}}<small>/{{pages}}</small></div>
+        <div class="page-total">第 {{page}} 页 · 本页 {{count}} 条</div>
+      </div>
+    </div>
+
+    {{if count}}
+    <div class="grid">
+      {{each items item}}
+      <div class="item">
+        <div class="idx">#{{item.id}}</div>
+        <div class="icon-wrap">
+          {{if item.icon}}
+          <img class="icon" src="{{item.icon}}" alt="{{item.title}}">
+          {{else}}
+          <div class="icon blank"></div>
+          {{/if}}
+        </div>
+        <div class="title">{{item.title}}</div>
+        {{if item.channel}}<div class="channel">{{item.channel}}</div>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <div class="empty">没有找到相关条目，换个关键词试试</div>
+    {{/if}}
+
+    <div class="footer">{{footer}}</div>
+  </div>
+</body>
+</html>
