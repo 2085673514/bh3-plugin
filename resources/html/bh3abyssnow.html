@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3深渊成绩</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px;
+    padding: 26px 28px 30px;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #4a1840;
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+  }
+  #container { display: flex; flex-direction: column; gap: 16px; }
+
+  /* 头部 */
+  .header {
+    display: flex; align-items: center; gap: 18px;
+    padding: 18px 22px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.38));
+    border: 1px solid rgba(214,77,148,.35);
+    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+  }
+  .avatar {
+    width: 84px; height: 84px; border-radius: 50%; flex: none;
+    border: 3px solid #fff; object-fit: cover; background: rgba(255,255,255,.55);
+    box-shadow: 0 6px 18px rgba(160,80,160,.25);
+  }
+  .avatar.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
+  .nickname { font-size: 26px; font-weight: 800; color: #7d2358; letter-spacing: 1px; }
+  .badges { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; padding: 3px 10px; border-radius: 999px; color: #a13570;
+    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.4);
+  }
+  .badge.level { color: #8e2f68; font-weight: 700; }
+
+  /* 面板 */
+  .panel {
+    padding: 18px 20px; border-radius: 20px;
+    background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.34));
+    border: 1px solid rgba(214,77,148,.3);
+    box-shadow: 0 8px 24px rgba(160,80,160,.14);
+  }
+  .sec-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #8e2f68; }
+  .sec-title i { width: 10px; height: 10px; border-radius: 3px; background: #d64d94; transform: rotate(45deg); }
+  .sec-title .hint { margin-left: auto; font-size: 12px; font-weight: 400; color: #a95f92; }
+
+  /* 深渊成绩卡 */
+  .abyss {
+    margin-top: 14px; padding: 14px; border-radius: 16px;
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(214,77,148,.22);
+  }
+  .abyss-top { display: flex; align-items: center; gap: 14px; }
+  .boss {
+    width: 64px; height: 64px; border-radius: 14px; flex: none; object-fit: cover;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.3);
+  }
+  .boss-name { flex: 1; font-size: 16px; font-weight: 700; color: #5d1c47; }
+  .score { font-size: 34px; font-weight: 900; line-height: 1; color: #b23ac4; font-variant-numeric: tabular-nums; }
+  .score small { margin-left: 4px; font-size: 13px; font-weight: 400; color: #a95f92; }
+
+  .lineup { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .chip { width: 74px; text-align: center; }
+  .chip img {
+    width: 64px; height: 64px; border-radius: 12px; object-fit: cover;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
+  }
+  .chip span {
+    display: block; margin-top: 4px; font-size: 11px; color: #7a4a9e;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pill {
+    font-size: 12px; padding: 3px 10px; border-radius: 999px; color: #8e2f68;
+    background: rgba(214,77,148,.12); border: 1px solid rgba(214,77,148,.3);
+  }
+  .time { margin-left: auto; font-size: 12px; color: #a95f92; }
+
+  .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
+  .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+<div id="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    {{if avatarUrl}}<img class="avatar" src="{{avatarUrl}}" alt="头像">{{else}}<div class="avatar blank"></div>{{/if}}
+    <div class="info">
+      <div class="nickname">{{nickname}}</div>
+      <div class="badges">
+        <span class="badge level">Lv.{{level}}</span>
+        {{if serverName}}<span class="badge">{{serverName}}服</span>{{/if}}
+        <span class="badge">UID {{uid}}</span>
+      </div>
+    </div>
+  </div>
+
+  {{each sections s}}
+  <div class="panel">
+    <div class="sec-title"><i></i>{{s.title}}<span class="hint">近期 {{s.reports.length}} 期</span></div>
+    {{each s.reports r}}
+    <div class="abyss">
+      <div class="abyss-top">
+        <img class="boss" src="{{r.bossAvatar}}" alt="{{r.bossName}}">
+        <div class="boss-name">{{r.bossName || '未知 BOSS'}}</div>
+        <div class="score">{{r.score}}<small>分</small></div>
+      </div>
+      <div class="lineup">
+        {{each r.lineup a}}
+        <div class="chip"><img src="{{a.icon}}" alt="{{a.name}}"><span>{{a.name}}</span></div>
+        {{/each}}
+        {{if r.elf}}
+        <div class="chip"><img src="{{r.elf.avatar}}" alt="{{r.elf.name}}"><span>{{r.elf.name}}</span></div>
+        {{/if}}
+      </div>
+      <div class="meta">
+        <span class="pill">{{r.level}}</span>
+        {{if r.cup !== null && r.cup !== undefined}}<span class="pill">杯数 {{r.cup}}</span>{{/if}}
+        {{if r.rank !== null && r.rank !== undefined}}<span class="pill">排名 {{r.rank}}</span>{{/if}}
+        <span class="time">{{r.time}}</span>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{/each}}
+
+  {{if empty}}
+  <div class="panel"><div class="empty">该账号暂无深渊成绩</div></div>
+  {{/if}}
+
+  <div class="footer">{{footer}}</div>
+</div>
+</body>
+</html>

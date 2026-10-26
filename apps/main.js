@@ -27,11 +27,14 @@ import {
 import { CookieMgr } from '../lib/mys/cookie.js'
 import { Bh3, InfoError, id2server, server2id } from '../lib/mys/api.js'
 import {
+  buildAbyssBoard,
   buildAbyssCard as buildMysAbyssCard,
   buildBattleCard as buildMysBattleCard,
+  buildBattleFieldBoard,
   buildCharaCard as buildMysCharaCard,
   buildFinanceCard,
   buildGachaCard,
+  buildGodWarBoard,
   buildIndexCard,
   buildNoteCard,
   buildRecordCard,
@@ -575,53 +578,108 @@ export class Bh3Plugin extends plugin {
   async showAbyss(e) {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(深渊|超弦)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uidValue, cookie) => {
-      const cards = []
-      const errors = []
-      for (const [endpoint, label] of [
-        ['/newAbyssReport', '超弦空间'],
-        ['/latestOldAbyssReport', '量子奇点'],
-      ]) {
-        try {
-          const report = await recordRequest(endpoint, uidValue, {}, cookie)
-          cards.push(buildAbyssCard(report, label))
-        } catch (error) {
-          // 该模式对该等级账号不可用时跳过，但保留错误用于区分「无数据」与「查询失败」
-          errors.push(error)
-        }
+      const results = await Promise.allSettled([
+        recordRequest('/index', uidValue, {}, cookie),
+        recordRequest('/newAbyssReport', uidValue, {}, cookie),
+        recordRequest('/latestOldAbyssReport', uidValue, {}, cookie),
+      ])
+      const pick = result => (result.status === 'fulfilled' ? result.value : null)
+      const raw = {
+        index: pick(results[0]),
+        newAbyssReport: pick(results[1]),
+        latestOldAbyssReport: pick(results[2]),
       }
-      const text = cards.map(card => card.text).filter(Boolean).join('\n')
+      const cachedRegion = await CookieMgr.getCachedRegion(uidValue).catch(() => '')
+      const data = buildAbyssBoard(raw, {
+        uid: uidValue,
+        server: raw.index?.role?.region || cachedRegion,
+        nickname: '',
+      })
+      if (!data.empty) {
+        const img = await this.renderMysHtml('html/bh3abyssnow', data)
+        if (img) return replyMysCard(e, img)
+      }
+      // 图片渲染失败或暂无数据时回退文本卡片，保持旧行为
+      const errors = results.slice(1)
+        .filter(result => result.status === 'rejected')
+        .map(result => result.reason)
+      const legacyCards = []
+      if (raw.newAbyssReport) legacyCards.push(buildAbyssCard(raw.newAbyssReport, '超弦空间'))
+      if (raw.latestOldAbyssReport) legacyCards.push(buildAbyssCard(raw.latestOldAbyssReport, '量子奇点'))
+      const text = legacyCards.map(card => card.text).filter(Boolean).join('\n')
       if (!text && errors.length > 0) {
-        return e.reply(`深渊查询失败：${errors[0].message}`)
+        return e.reply(`深渊查询失败：${errors[0]?.message || "未知错误"}`)
       }
-      const avatarGroups = cards.flatMap(card => card.avatarGroups)
       return this.replyWithCard(e, {
         title: '崩坏3 深渊',
         subtitle: `UID ${uidValue}`,
         text: text || '暂无深渊数据。',
-        avatarGroups: avatarGroups,
+        avatarGroups: legacyCards.flatMap(card => card.avatarGroups),
       })
-    }, match?.[4] || '')
+    }, String(match?.[4] || '').trim())
   }
 
   async showBattleField(e) {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(战场|记忆战场)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uid, cookie) => {
-      const data = await recordRequest('/battleFieldReport', uid, {}, cookie)
-      const card = buildBattleFieldCard(data)
+      const results = await Promise.allSettled([
+        recordRequest('/index', uid, {}, cookie),
+        recordRequest('/battleFieldReport', uid, {}, cookie),
+      ])
+      const pick = result => (result.status === 'fulfilled' ? result.value : null)
+      const raw = {
+        index: pick(results[0]),
+        battleFieldReport: pick(results[1]),
+      }
+      const cachedRegion = await CookieMgr.getCachedRegion(uid).catch(() => '')
+      const data = buildBattleFieldBoard(raw, {
+        uid,
+        server: raw.index?.role?.region || cachedRegion,
+        nickname: '',
+      })
+      if (!data.empty) {
+        const img = await this.renderMysHtml('html/bh3battlefield', data)
+        if (img) return replyMysCard(e, img)
+      }
+      if (!raw.battleFieldReport && results[1].status === 'rejected') {
+        return e.reply(`战场查询失败：${results[1].reason?.message || "未知错误"}`)
+      }
+      const card = buildBattleFieldCard(raw.battleFieldReport || {})
       return this.replyWithCard(e, {
         title: '崩坏3 记忆战场',
         subtitle: `UID ${uid}`,
         text: card.text,
         avatarGroups: card.avatarGroups,
       })
-    }, match?.[4] || '')
+    }, String(match?.[4] || '').trim())
   }
 
   async showGodWar(e) {
     const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(逐光)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uid, cookie) => {
-      const data = await recordRequest('/godWar', uid, {}, cookie)
-      const card = buildGodWarCard(data)
+      const results = await Promise.allSettled([
+        recordRequest('/index', uid, {}, cookie),
+        recordRequest('/godWar', uid, {}, cookie),
+      ])
+      const pick = result => (result.status === 'fulfilled' ? result.value : null)
+      const raw = {
+        index: pick(results[0]),
+        godWar: pick(results[1]),
+      }
+      const cachedRegion = await CookieMgr.getCachedRegion(uid).catch(() => '')
+      const data = buildGodWarBoard(raw, {
+        uid,
+        server: raw.index?.role?.region || cachedRegion,
+        nickname: '',
+      })
+      if (!data.empty) {
+        const img = await this.renderMysHtml('html/bh3godwar', data)
+        if (img) return replyMysCard(e, img)
+      }
+      if (!raw.godWar && results[1].status === 'rejected') {
+        return e.reply(`逐光查询失败：${results[1].reason?.message || "未知错误"}`)
+      }
+      const card = buildGodWarCard(raw.godWar || {})
       return this.replyWithCard(e, {
         title: '崩坏3 逐光',
         subtitle: `UID ${uid}`,
@@ -629,7 +687,7 @@ export class Bh3Plugin extends plugin {
         stats: card.stats,
         avatarGroups: card.avatarGroups,
       })
-    }, match?.[4] || '')
+    }, String(match?.[4] || '').trim())
   }
 
   async damageCommand(e) {
