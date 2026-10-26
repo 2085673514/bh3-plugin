@@ -161,6 +161,36 @@
     </div>
     {{/if}}
 
+    {{if pieceSkill}}
+    <div class="panel">
+      <div class="sec-title"><i></i>圣痕技能</div>
+      <div class="skills">
+        <div class="skill">
+          <div class="body">
+            {{if pieceSkill.name}}<div class="name">{{pieceSkill.name}}</div>{{/if}}
+            <div class="desc">{{pieceSkill.desc}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/if}}
+
+    {{if setSkills.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>套装技能</div>
+      <div class="skills">
+        {{each setSkills skill index}}
+        <div class="skill">
+          <div class="body">
+            <div class="name">{{skill.name}}<span class="hint">{{index === 0 ? '2 件套' : '3 件套'}}</span></div>
+            <div class="desc">{{skill.desc}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
     {{if hexagon.length}}
     <div class="panel">
       <div class="sec-title"><i></i>六维评级</div>

@@ -96,6 +96,11 @@
   .skill { display: flex; gap: 12px; }
   .skill img { width: 40px; height: 40px; flex: none; border-radius: 10px; object-fit: contain;
     border: 1px solid rgba(214,77,148,.25); background: rgba(255,255,255,.6); }
+  .skill .badge {
+    flex: none; align-self: flex-start; margin-top: 2px; font-size: 11px; font-weight: 700;
+    color: #fff; background: linear-gradient(135deg, #c93aa8, #8f7bff);
+    border-radius: 999px; padding: 3px 10px; white-space: nowrap;
+  }
   .skill .body { flex: 1; min-width: 0; }
   .skill .name { font-size: 13px; font-weight: 700; color: #5d1c47; }
   .skill .desc { margin-top: 4px; font-size: 12px; color: #7a4a8e; line-height: 1.6; white-space: pre-wrap; }
@@ -151,6 +156,23 @@
         {{/each}}
       </div>
     </div>
+
+    {{if setSkills.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>套装技能 <span class="hint">{{setSkills.length}} 条</span></div>
+      <div class="skills">
+        {{each setSkills skill index}}
+        <div class="skill">
+          <span class="badge">{{index === 0 ? '2 件套' : '3 件套'}}</span>
+          <div class="body">
+            <div class="name">{{skill.name}}</div>
+            <div class="desc">{{skill.desc}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
 
     {{if pieces[0].skill || pieces[1].skill || pieces[2].skill}}
     <div class="panel">
