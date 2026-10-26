@@ -596,7 +596,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3abyssnow', data, { deviceScaleFactor: 1.6, quality: 82 })
+        const img = await this.renderMysHtml('html/bh3abyssnow', data, { deviceScaleFactor: 1.6, quality: 82, waitImages: 7000 })
         if (img) return replyMysCard(e, img)
       }
       // 图片渲染失败或暂无数据时回退文本卡片，保持旧行为
@@ -638,7 +638,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3battlefield', data, { deviceScaleFactor: 1.6, quality: 82 })
+        const img = await this.renderMysHtml('html/bh3battlefield', data, { deviceScaleFactor: 1.6, quality: 82, waitImages: 7000 })
         if (img) return replyMysCard(e, img)
       }
       if (!raw.battleFieldReport && results[1].status === 'rejected') {
@@ -673,7 +673,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3godwar', data, { deviceScaleFactor: 1.8, quality: 82 })
+        const img = await this.renderMysHtml('html/bh3godwar', data, { deviceScaleFactor: 1.8, quality: 82, waitImages: 9000 })
         if (img) return replyMysCard(e, img)
       }
       if (!raw.godWar && results[1].status === 'rejected') {
