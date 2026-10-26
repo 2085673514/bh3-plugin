@@ -8,85 +8,93 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     width: 720px;
-    padding: 26px 28px 30px;
+    padding: 24px 26px 26px;
     font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
-    color: #4a1840;
+    color: #e9ebf5;
     background:
-      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
-      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
-      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
-      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+      radial-gradient(760px 420px at 92% -10%, rgba(126,87,255,.30), rgba(126,87,255,0) 62%),
+      radial-gradient(620px 400px at 2% 4%, rgba(60,150,255,.16), rgba(60,150,255,0) 64%),
+      radial-gradient(700px 520px at 50% 108%, rgba(255,150,90,.10), rgba(255,150,90,0) 70%),
+      linear-gradient(160deg, #14141f 0%, #191528 48%, #0e0f1a 100%);
   }
-  #container { display: flex; flex-direction: column; gap: 16px; }
+  #container { display: flex; flex-direction: column; gap: 14px; }
 
   /* 头部 */
   .header {
     display: flex; align-items: center; gap: 18px;
-    padding: 18px 22px; border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.38));
-    border: 1px solid rgba(214,77,148,.35);
-    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+    padding: 16px 20px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+    border: 1px solid rgba(255,255,255,.10);
   }
   .avatar {
-    width: 84px; height: 84px; border-radius: 50%; flex: none;
-    border: 3px solid #fff; object-fit: cover; background: rgba(255,255,255,.55);
-    box-shadow: 0 6px 18px rgba(160,80,160,.25);
+    width: 74px; height: 74px; border-radius: 50%; flex: none; object-fit: cover;
+    border: 2px solid rgba(255,212,122,.75); background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 4px rgba(255,190,96,.12), 0 8px 20px rgba(0,0,0,.35);
   }
-  .avatar.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
-  .nickname { font-size: 26px; font-weight: 800; color: #7d2358; letter-spacing: 1px; }
+  .avatar.blank { background: linear-gradient(135deg, #2a2740, #1b1a2c); }
+  .nickname { font-size: 25px; font-weight: 800; color: #ffffff; letter-spacing: .5px; }
   .badges { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
   .badge {
-    font-size: 12px; padding: 3px 10px; border-radius: 999px; color: #a13570;
-    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.4);
+    font-size: 11px; padding: 3px 10px; border-radius: 999px; color: rgba(255,255,255,.74);
+    background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.12);
   }
-  .badge.level { color: #8e2f68; font-weight: 700; }
+  .badge.level {
+    color: #ffd47a; border-color: rgba(255,212,122,.45); background: rgba(255,212,122,.10);
+    font-weight: 700;
+  }
 
   /* 面板 */
   .panel {
-    padding: 18px 20px; border-radius: 20px;
-    background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.34));
-    border: 1px solid rgba(214,77,148,.3);
-    box-shadow: 0 8px 24px rgba(160,80,160,.14);
+    padding: 16px 18px; border-radius: 18px;
+    background: linear-gradient(155deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    border: 1px solid rgba(255,255,255,.085);
   }
-  .sec-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #8e2f68; }
-  .sec-title i { width: 10px; height: 10px; border-radius: 3px; background: #d64d94; transform: rotate(45deg); }
-  .sec-title .hint { margin-left: auto; font-size: 12px; font-weight: 400; color: #a95f92; }
+  .sec-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: 1px; color: #ffffff; }
+  .sec-title i { width: 3px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, #ffd47a, #ff9d5c); }
+  .sec-title .hint { margin-left: auto; font-size: 11px; font-weight: 400; letter-spacing: 0; color: rgba(255,255,255,.42); }
 
   /* 战场期数 */
-  .bf-block { margin-top: 14px; }
-  .bf-block + .bf-block { margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(214,77,148,.3); }
+  .bf-block { margin-top: 12px; }
+  .bf-block + .bf-block { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07); }
   .bf-sum {
     display: flex; align-items: center; gap: 16px;
-    padding: 12px 16px; border-radius: 14px;
-    background: rgba(255,255,255,.55);
-    border: 1px solid rgba(214,77,148,.22);
+    padding: 13px 16px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,212,122,.09), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,212,122,.22);
   }
-  .bf-score { font-size: 34px; font-weight: 900; line-height: 1; color: #b23ac4; font-variant-numeric: tabular-nums; }
-  .bf-score small { margin-left: 4px; font-size: 13px; font-weight: 400; color: #a95f92; }
-  .bf-facts { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 13px; color: #7a4a9e; }
-  .bf-facts b { color: #8e2f68; }
-  .bf-facts .time { margin-left: auto; font-size: 12px; color: #a95f92; }
+  .bf-score {
+    font-size: 34px; font-weight: 800; line-height: 1; color: #ffd47a;
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(255,190,90,.25);
+  }
+  .bf-score small { margin-left: 4px; font-size: 12px; font-weight: 400; color: rgba(255,255,255,.45); text-shadow: none; }
+  .bf-facts { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .bf-facts .fact {
+    font-size: 11px; padding: 3px 10px; border-radius: 999px; color: rgba(255,255,255,.72);
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+  }
+  .bf-facts .fact b { color: #ffffff; font-weight: 700; }
+  .bf-facts .time { margin-left: auto; font-size: 11px; color: rgba(255,255,255,.34); letter-spacing: .5px; }
 
   .bf-row { display: flex; gap: 12px; margin-top: 12px; }
   .bf-card {
-    flex: 1; padding: 12px 10px; border-radius: 14px; text-align: center;
-    background: rgba(255,255,255,.55);
-    border: 1px solid rgba(214,77,148,.22);
+    flex: 1; padding: 14px 10px 12px; border-radius: 14px; text-align: center;
+    background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.08);
   }
   .bf-boss {
-    width: 72px; height: 72px; border-radius: 14px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.28);
+    width: 70px; height: 70px; border-radius: 13px; object-fit: cover;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
   }
-  .bf-name { margin-top: 7px; font-size: 13px; font-weight: 700; color: #5d1c47; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bf-lineup { display: flex; gap: 4px; justify-content: center; margin-top: 9px; }
+  .bf-name { margin-top: 8px; font-size: 13px; font-weight: 700; color: #f2f3fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bf-lineup { display: flex; gap: 5px; justify-content: center; margin-top: 9px; }
   .bf-lineup img {
-    width: 42px; height: 42px; border-radius: 9px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.2);
+    width: 40px; height: 40px; border-radius: 9px; object-fit: cover;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
   }
-  .bf-bscore { margin-top: 9px; font-size: 17px; font-weight: 800; color: #b23ac4; font-variant-numeric: tabular-nums; }
+  .bf-bscore { margin-top: 9px; font-size: 18px; font-weight: 800; color: #ffd47a; font-variant-numeric: tabular-nums; }
 
-  .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
-  .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
+  .empty { padding: 16px 0; text-align: center; font-size: 13px; color: rgba(255,255,255,.42); }
+  .footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.26); letter-spacing: 1px; }
 </style>
 </head>
 <body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
@@ -112,16 +120,16 @@
       <div class="bf-sum">
         <div class="bf-score">{{r.score}}<small>分</small></div>
         <div class="bf-facts">
-          <span>{{r.area}}</span>
-          {{if r.pct !== null && r.pct !== undefined}}<span>前 <b>{{r.pct}}%</b></span>{{/if}}
-          {{if r.rank !== null && r.rank !== undefined}}<span>排名 <b>{{r.rank}}</b></span>{{/if}}
+          {{if r.area}}<span class="fact">{{r.area}}</span>{{/if}}
+          {{if r.pct !== null && r.pct !== undefined}}<span class="fact">前 <b>{{r.pct}}%</b></span>{{/if}}
+          {{if r.rank !== null && r.rank !== undefined}}<span class="fact">排名 <b>{{r.rank}}</b></span>{{/if}}
           <span class="time">{{r.time}}</span>
         </div>
       </div>
       <div class="bf-row">
         {{each r.infos b}}
         <div class="bf-card">
-          <img class="bf-boss" src="{{b.bossAvatar}}" alt="{{b.bossName}}">
+          {{if b.bossAvatar}}<img class="bf-boss" src="{{b.bossAvatar}}" alt="{{b.bossName}}">{{/if}}
           <div class="bf-name">{{b.bossName || '未知 BOSS'}}</div>
           <div class="bf-lineup">
             {{each b.lineup a}}<img src="{{a.icon || a.bg}}" alt="{{a.name}}">{{/each}}

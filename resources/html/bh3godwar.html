@@ -8,101 +8,106 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     width: 720px;
-    padding: 26px 28px 30px;
+    padding: 24px 26px 26px;
     font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
-    color: #4a1840;
+    color: #e9ebf5;
     background:
-      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%),
-      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,.95), rgba(255,214,232,0) 68%),
-      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,.75), rgba(232,178,244,0) 66%),
-      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%);
+      radial-gradient(760px 420px at 92% -10%, rgba(126,87,255,.30), rgba(126,87,255,0) 62%),
+      radial-gradient(620px 400px at 2% 4%, rgba(60,150,255,.16), rgba(60,150,255,0) 64%),
+      radial-gradient(700px 520px at 50% 108%, rgba(255,150,90,.10), rgba(255,150,90,0) 70%),
+      linear-gradient(160deg, #14141f 0%, #191528 48%, #0e0f1a 100%);
   }
-  #container { display: flex; flex-direction: column; gap: 16px; }
+  #container { display: flex; flex-direction: column; gap: 14px; }
 
   /* 头部 */
   .header {
     display: flex; align-items: center; gap: 18px;
-    padding: 18px 22px; border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.38));
-    border: 1px solid rgba(214,77,148,.35);
-    box-shadow: 0 10px 30px rgba(160,80,160,.18);
+    padding: 16px 20px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+    border: 1px solid rgba(255,255,255,.10);
   }
   .avatar {
-    width: 84px; height: 84px; border-radius: 50%; flex: none;
-    border: 3px solid #fff; object-fit: cover; background: rgba(255,255,255,.55);
-    box-shadow: 0 6px 18px rgba(160,80,160,.25);
+    width: 74px; height: 74px; border-radius: 50%; flex: none; object-fit: cover;
+    border: 2px solid rgba(255,212,122,.75); background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 4px rgba(255,190,96,.12), 0 8px 20px rgba(0,0,0,.35);
   }
-  .avatar.blank { background: linear-gradient(135deg, #f3d5ee, #dcc0f2); }
-  .nickname { font-size: 26px; font-weight: 800; color: #7d2358; letter-spacing: 1px; }
+  .avatar.blank { background: linear-gradient(135deg, #2a2740, #1b1a2c); }
+  .nickname { font-size: 25px; font-weight: 800; color: #ffffff; letter-spacing: .5px; }
   .badges { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
   .badge {
-    font-size: 12px; padding: 3px 10px; border-radius: 999px; color: #a13570;
-    background: rgba(255,255,255,.55); border: 1px solid rgba(214,77,148,.4);
+    font-size: 11px; padding: 3px 10px; border-radius: 999px; color: rgba(255,255,255,.74);
+    background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.12);
   }
-  .badge.level { color: #8e2f68; font-weight: 700; }
+  .badge.level {
+    color: #ffd47a; border-color: rgba(255,212,122,.45); background: rgba(255,212,122,.10);
+    font-weight: 700;
+  }
 
   /* 面板 */
   .panel {
-    padding: 18px 20px; border-radius: 20px;
-    background: linear-gradient(155deg, rgba(255,255,255,.62), rgba(255,255,255,.34));
-    border: 1px solid rgba(214,77,148,.3);
-    box-shadow: 0 8px 24px rgba(160,80,160,.14);
+    padding: 16px 18px; border-radius: 18px;
+    background: linear-gradient(155deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    border: 1px solid rgba(255,255,255,.085);
   }
-  .sec-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #8e2f68; }
-  .sec-title i { width: 10px; height: 10px; border-radius: 3px; background: #d64d94; transform: rotate(45deg); }
-  .sec-title .hint { margin-left: auto; font-size: 12px; font-weight: 400; color: #a95f92; }
+  .sec-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: 1px; color: #ffffff; }
+  .sec-title i { width: 3px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, #ffd47a, #ff9d5c); }
+  .sec-title .hint { margin-left: auto; font-size: 11px; font-weight: 400; letter-spacing: 0; color: rgba(255,255,255,.42); }
 
   /* 概览数值 */
   .tiles { display: flex; gap: 10px; margin-top: 14px; }
   .tile {
-    flex: 1; padding: 13px 8px; border-radius: 14px; text-align: center;
-    background: rgba(255,255,255,.55);
-    border: 1px solid rgba(214,77,148,.22);
+    flex: 1; padding: 14px 8px 12px; border-radius: 14px; text-align: center;
+    background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.08);
   }
-  .tile b { display: block; font-size: 23px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums; }
-  .tile span { display: block; margin-top: 4px; font-size: 11px; color: #7a4a9e; }
+  .tile b {
+    display: block; font-size: 24px; font-weight: 800; color: #ffd47a;
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(255,190,90,.22);
+  }
+  .tile span { display: block; margin-top: 5px; font-size: 11px; color: rgba(255,255,255,.52); }
 
   /* 装甲成绩单 */
   .transcript { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  .tr-item { position: relative; width: 72px; }
+  .tr-item { position: relative; width: 70px; }
   .tr-item img {
-    width: 72px; height: 72px; border-radius: 14px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
+    width: 70px; height: 70px; border-radius: 13px; object-fit: cover;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.13);
   }
   .tr-item .lv {
     position: absolute; right: 4px; bottom: 4px;
-    font-size: 10px; padding: 1px 5px; border-radius: 6px;
-    background: rgba(142,47,104,.92); color: #fff;
+    font-size: 10px; padding: 1px 6px; border-radius: 6px;
+    background: rgba(10,10,18,.82); color: #ffd47a; border: 1px solid rgba(255,212,122,.35);
   }
 
   /* 挑战记录 */
   .gw-row {
     display: flex; align-items: center; gap: 16px;
     margin-top: 12px; padding: 12px 14px; border-radius: 14px;
-    background: rgba(255,255,255,.55);
-    border: 1px solid rgba(214,77,148,.22);
+    background: linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.075);
   }
-  .gw-side { width: 92px; flex: none; }
+  .gw-side { width: 96px; flex: none; }
   .gw-diff {
-    display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 999px;
-    background: #8e2f68; color: #fff;
+    display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 999px;
+    background: rgba(255,212,122,.12); color: #ffd47a; border: 1px solid rgba(255,212,122,.40);
   }
-  .gw-score { margin-top: 6px; font-size: 24px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums; }
+  .gw-score { margin-top: 7px; font-size: 25px; font-weight: 800; color: #ffffff; font-variant-numeric: tabular-nums; }
   .gw-lineup { flex: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .ava { position: relative; padding-bottom: 7px; }
+  .ava { position: relative; padding-bottom: 8px; }
   .ava img {
-    width: 56px; height: 56px; border-radius: 12px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
+    width: 54px; height: 54px; border-radius: 11px; object-fit: cover;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
   }
-  .ava.main img { width: 68px; height: 68px; border-color: rgba(178,58,196,.6); }
+  .ava.main img { width: 66px; height: 66px; border-color: rgba(255,212,122,.55); }
   .ava .tag {
     position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
     font-size: 9px; padding: 0 5px; border-radius: 6px; white-space: nowrap;
-    background: rgba(142,47,104,.9); color: #fff;
+    background: rgba(10,10,18,.82); color: rgba(255,255,255,.62); border: 1px solid rgba(255,255,255,.10);
   }
+  .ava.main .tag { color: #ffd47a; border-color: rgba(255,212,122,.35); }
 
-  .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
-  .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
+  .empty { padding: 16px 0; text-align: center; font-size: 13px; color: rgba(255,255,255,.42); }
+  .footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.26); letter-spacing: 1px; }
 </style>
 </head>
 <body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
