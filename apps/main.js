@@ -596,7 +596,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3abyssnow', data)
+        const img = await this.renderMysHtml('html/bh3abyssnow', data, { deviceScaleFactor: 1.6, quality: 82 })
         if (img) return replyMysCard(e, img)
       }
       // 图片渲染失败或暂无数据时回退文本卡片，保持旧行为
@@ -638,7 +638,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3battlefield', data)
+        const img = await this.renderMysHtml('html/bh3battlefield', data, { deviceScaleFactor: 1.6, quality: 82 })
         if (img) return replyMysCard(e, img)
       }
       if (!raw.battleFieldReport && results[1].status === 'rejected') {
@@ -673,7 +673,7 @@ export class Bh3Plugin extends plugin {
         nickname: '',
       })
       if (!data.empty) {
-        const img = await this.renderMysHtml('html/bh3godwar', data)
+        const img = await this.renderMysHtml('html/bh3godwar', data, { deviceScaleFactor: 1.8, quality: 82 })
         if (img) return replyMysCard(e, img)
       }
       if (!raw.godWar && results[1].status === 'rejected') {
@@ -996,10 +996,10 @@ export class Bh3Plugin extends plugin {
   }
 
   /** 使用 honkai-mys 的 HTML 模板渲染(高分辨率，失败回退框架渲染) */
-  async renderMysHtml(tpl, data) {
+  async renderMysHtml(tpl, data, options = {}) {
     const name = String(tpl).replace(/^html\//, '')
     try {
-      const imgPath = await renderMysTemplate(name, data)
+      const imgPath = await renderMysTemplate(name, data, options)
       const seg = globalThis.segment
       return seg?.image ? seg.image(imgPath) : imgPath
     } catch (err) {
@@ -1008,7 +1008,10 @@ export class Bh3Plugin extends plugin {
 
     let fallback = null
     try {
-      fallback = await this.renderImg('bh3-plugin', `html/${name}`, data, { retType: 'base64', scale: DEVICE_SCALE })
+      fallback = await this.renderImg('bh3-plugin', `html/${name}`, data, {
+        retType: 'base64',
+        scale: options.deviceScaleFactor || DEVICE_SCALE,
+      })
     } catch (fallbackError) {
       globalThis.logger?.error?.('[bh3] renderImg 失败', fallbackError)
     }

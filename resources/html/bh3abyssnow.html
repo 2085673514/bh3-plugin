@@ -73,6 +73,7 @@
     font-size: 11px; padding: 2px 9px; border-radius: 999px; color: #8e2f68;
     background: rgba(214,77,148,.12); border: 1px solid rgba(214,77,148,.3);
   }
+  .pill.type { color: #7b2c9e; background: rgba(178,58,196,.14); border-color: rgba(178,58,196,.35); }
   .score-box { flex: none; text-align: right; }
   .score { font-size: 30px; font-weight: 900; line-height: 1; color: #b23ac4; font-variant-numeric: tabular-nums; }
   .score small { margin-left: 3px; font-size: 12px; font-weight: 400; color: #a95f92; }
@@ -114,7 +115,7 @@
 
   {{each sections s}}
   <div class="panel">
-    <div class="sec-title"><i></i>{{s.title}}<span class="hint">近期 {{s.reports.length}} 期</span></div>
+    <div class="sec-title"><i></i>{{s.title}}<span class="hint">共 {{s.reports.length}} 期</span></div>
     {{each s.reports r}}
     <div class="record">
       <div class="record-top">
@@ -122,6 +123,7 @@
         <div class="boss-info">
           <div class="boss-name">{{r.bossName || '未知 BOSS'}}</div>
           <div class="boss-meta">
+            {{if s.mixed}}<span class="pill type">{{r.type}}</span>{{/if}}
             <span class="pill">{{r.level}}</span>
             {{if r.cup !== null && r.cup !== undefined}}<span class="pill">杯数 {{r.cup}}</span>{{/if}}
             {{if r.rank !== null && r.rank !== undefined}}<span class="pill">排名 {{r.rank}}</span>{{/if}}

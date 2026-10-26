@@ -62,47 +62,62 @@
   .tile b { display: block; font-size: 22px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums; }
   .tile span { display: block; margin-top: 4px; font-size: 11px; color: #7a4a9e; }
 
-  /* 装甲成绩单 */
-  .transcript { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
-  .tr-item { position: relative; width: 66px; }
-  .tr-item img {
-    width: 66px; height: 66px; border-radius: 13px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
-  }
-  .tr-item .lv {
-    position: absolute; right: 3px; bottom: 3px;
-    font-size: 10px; padding: 1px 5px; border-radius: 6px;
-    background: rgba(142,47,104,.92); color: #fff;
-  }
-
-  /* 挑战记录：难度 + 出战/支援在一行，分数右对齐 */
+  /* 挑战记录 */
   .gw-row {
-    display: flex; align-items: center; gap: 12px;
-    margin-top: 10px; padding: 10px 14px; border-radius: 14px;
+    margin-top: 12px; padding: 12px 14px 13px; border-radius: 14px;
     background: rgba(255,255,255,.55);
     border: 1px solid rgba(214,77,148,.22);
   }
+  .gw-top { display: flex; align-items: center; gap: 10px; }
   .gw-diff {
     flex: none; font-size: 11px; padding: 2px 10px; border-radius: 999px;
     background: #8e2f68; color: #fff;
   }
-  .gw-lineup { flex: 1; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-  .ava { position: relative; padding-bottom: 6px; }
-  .ava img {
-    width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
-    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
-  }
-  .ava.main img { width: 56px; height: 56px; border-color: rgba(178,58,196,.6); }
-  .ava .tag {
-    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-    font-size: 9px; padding: 0 5px; border-radius: 6px; white-space: nowrap;
-    background: rgba(142,47,104,.9); color: #fff;
-  }
+  .gw-time { font-size: 11px; color: #a95f92; }
   .gw-score {
-    flex: none; min-width: 96px; text-align: right;
-    font-size: 24px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums;
+    margin-left: auto; text-align: right;
+    font-size: 26px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums;
   }
   .gw-score small { margin-left: 3px; font-size: 11px; font-weight: 400; color: #a95f92; }
+
+  .gw-lineup { display: flex; align-items: flex-start; gap: 10px; margin-top: 11px; flex-wrap: wrap; }
+  .ava { position: relative; width: 58px; text-align: center; }
+  .ava img {
+    width: 54px; height: 54px; border-radius: 12px; object-fit: cover;
+    background: rgba(255,255,255,.6); border: 1px solid rgba(214,77,148,.25);
+  }
+  .ava.main { width: 64px; }
+  .ava.main img { width: 62px; height: 62px; border-color: rgba(178,58,196,.6); }
+  .ava .tag {
+    position: absolute; top: -3px; right: -3px;
+    font-size: 9px; padding: 0 5px; border-radius: 6px; white-space: nowrap;
+    background: rgba(142,47,104,.92); color: #fff;
+  }
+  .ava .name {
+    display: block; margin-top: 4px; font-size: 10px; line-height: 1.25;
+    color: #7a4a9e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .gw-detail {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 10px; padding-top: 9px;
+    border-top: 1px dashed rgba(214,77,148,.3);
+  }
+  .cond {
+    font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    color: #8e2f68; background: rgba(178,58,196,.12);
+    border: 1px solid rgba(178,58,196,.25);
+  }
+  .item { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: #7a4a9e; }
+  .item img { width: 20px; height: 20px; border-radius: 6px; object-fit: cover; background: rgba(255,255,255,.6); }
+  .buff-title { font-size: 10px; color: #a95f92; }
+  .buff { position: relative; display: inline-flex; }
+  .buff img { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; background: rgba(255,255,255,.6); }
+  .buff i {
+    position: absolute; right: -4px; bottom: -4px;
+    font-size: 9px; font-style: normal; padding: 0 3px; border-radius: 5px;
+    background: #8e2f68; color: #fff;
+  }
 
   .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
   .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
@@ -136,30 +151,28 @@
   </div>
   {{/if}}
 
-  <!-- 装甲成绩单 -->
-  {{if transcript.length}}
-  <div class="panel">
-    <div class="sec-title"><i></i>装甲成绩单<span class="hint">{{transcript.length}} 名</span></div>
-    <div class="transcript">
-      {{each transcript t}}
-      <div class="tr-item"><img src="{{t.img}}" alt="{{t.name}}">{{if t.level}}<span class="lv">Lv.{{t.level}}</span>{{/if}}</div>
-      {{/each}}
-    </div>
-  </div>
-  {{/if}}
-
   <!-- 挑战记录 -->
   <div class="panel">
-    <div class="sec-title"><i></i>挑战记录<span class="hint">{{if records.length}}{{records.length}} 次{{/if}}</span></div>
+    <div class="sec-title"><i></i>挑战记录<span class="hint">{{if records.length}}共 {{records.length}} 次{{/if}}</span></div>
     {{each records r}}
     <div class="gw-row">
-      <span class="gw-diff">{{r.difficulty}}</span>
-      <div class="gw-lineup">
-        {{if r.main.img}}<div class="ava main"><img src="{{r.main.img}}" alt="{{r.main.name}}"><span class="tag">出战</span></div>{{/if}}
-        {{each r.supports s}}<div class="ava"><img src="{{s.img}}" alt="{{s.name}}"><span class="tag">支援</span></div>{{/each}}
-        {{if r.elf}}<div class="ava"><img src="{{r.elf.img}}" alt="{{r.elf.name}}"><span class="tag">人偶</span></div>{{/if}}
+      <div class="gw-top">
+        <span class="gw-diff">{{r.difficulty}}</span>
+        {{if r.time}}<span class="gw-time">{{r.time}}</span>{{/if}}
+        <span class="gw-score">{{r.score}}<small>分</small></span>
       </div>
-      <div class="gw-score">{{r.score}}<small>分</small></div>
+      <div class="gw-lineup">
+        {{if r.main.img}}<div class="ava main"><span class="tag">出战{{if r.main.level}} Lv.{{r.main.level}}{{/if}}</span><img src="{{r.main.img}}" alt="{{r.main.name}}"><span class="name">{{r.main.name}}</span></div>{{/if}}
+        {{each r.supports s}}<div class="ava"><span class="tag">支援</span><img src="{{s.img}}" alt="{{s.name}}"><span class="name">{{s.name}}</span></div>{{/each}}
+        {{if r.elf}}<div class="ava elf"><span class="tag">人偶</span><img src="{{r.elf.img}}" alt="{{r.elf.name}}"><span class="name">{{r.elf.name}}</span></div>{{/if}}
+      </div>
+      {{if r.conditions.length || r.buffs.length || r.extraItem}}
+      <div class="gw-detail">
+        {{each r.conditions c}}<span class="cond">{{c.name}}</span>{{/each}}
+        {{if r.extraItem}}<span class="item"><img src="{{r.extraItem}}" alt="">追忆之证</span>{{/if}}
+        {{if r.buffs.length}}<span class="buff-title">增益</span>{{each r.buffs b}}<span class="buff"><img src="{{b.icon}}" alt=""><i>{{b.number}}</i></span>{{/each}}{{/if}}
+      </div>
+      {{/if}}
     </div>
     {{/each}}
     {{if empty}}<div class="empty">该账号暂无逐光挑战记录</div>{{/if}}
