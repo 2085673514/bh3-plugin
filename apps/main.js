@@ -968,47 +968,57 @@ export class Bh3Plugin extends plugin {
     }
     try {
       const dbHit = findCharacter(keyword)
-      const searchKeyword = dbHit ? dbHit.name : keyword
-      const { list, total } = await wikiSearch(searchKeyword, page)
-      const maxPage = Math.max(1, Math.ceil(total / 15))
+      // 角色图鉴按女武神正式名搜索（支持「炎律」这类简称）；
+      // 其它图鉴保留原关键词，避免「西琳」被替换成「奇迹☆魔法少女」后搜不到圣痕
+      let searchKeyword = type === '角色图鉴' && dbHit ? dbHit.name : keyword
+      let { list, total } = await wikiSearch(searchKeyword, page)
+      if (list.length === 0 && dbHit && searchKeyword !== dbHit.name) {
+        searchKeyword = dbHit.name
+        const retry = await wikiSearch(searchKeyword, page)
+        list = retry.list
+        total = retry.total
+      }
+      let maxPage = Math.max(1, Math.ceil(total / 15))
       let results = list
       let typeMissing = false
-      if (type) {
-        const keywords = {
-          角色图鉴: ['女武神', '角色'],
-          武器图鉴: ['武器'],
-          圣痕图鉴: ['圣痕'],
-          人偶图鉴: ['人偶'],
-          协同者图鉴: ['协同者'],
-        }
-        const filter = keywords[type] || []
-        const pick = items => items.filter(item => filter.some(word => item.channel?.includes(word) || item.parent?.includes(word)))
-        let matched = pick(results)
-        // 当前页没有对应分类时，往后翻两页找，避免「角色图鉴 琪亚娜」被圣痕占满
-        if (matched.length === 0) {
-          for (const nextPage of [page + 1, page + 2]) {
-            if (nextPage > maxPage) break
-            const next = await wikiSearch(searchKeyword, nextPage)
-            const hit = pick(next.list)
-            if (hit.length > 0) {
-              matched = hit
-              page = nextPage
-              break
-            }
-          }
-        }
-        if (matched.length > 0) {
-          results = matched
-        } else {
-          typeMissing = true
-        }
-      }
       // 完全匹配 / 前缀匹配排前面
       const rank = item => {
         if (item.title === searchKeyword) return 3
         if (item.title.startsWith(searchKeyword)) return 2
         if (item.title.includes(searchKeyword)) return 1
         return 0
+      }
+      if (type) {
+        const keywords = {
+          角色图鉴: ['女武神'],
+          武器图鉴: ['武器'],
+          圣痕图鉴: ['圣痕'],
+          人偶图鉴: ['人偶'],
+          协同者图鉴: ['协同者'],
+        }
+        const filter = keywords[type] || []
+        const pick = item => filter.some(word => item.channel?.includes(word) || item.parent?.includes(word))
+        // 分类图鉴按分类收集全部结果后再本地分页，避免总数/页数与实际条目对不上
+        const collected = []
+        const seen = new Set()
+        const scanPages = Math.min(maxPage, 6)
+        for (let p = 1; p <= scanPages; p++) {
+          const items = p === page ? list : (await wikiSearch(searchKeyword, p).catch(() => ({ list: [] }))).list
+          for (const item of items) {
+            if (!pick(item) || seen.has(String(item.id))) continue
+            seen.add(String(item.id))
+            collected.push(item)
+          }
+        }
+        if (collected.length === 0) {
+          typeMissing = true
+        } else {
+          collected.sort((a, b) => rank(b) - rank(a))
+          total = collected.length
+          maxPage = Math.max(1, Math.ceil(total / 15))
+          page = Math.min(Math.max(1, page), maxPage)
+          results = collected.slice((page - 1) * 15, page * 15)
+        }
       }
       results = results.slice().sort((a, b) => rank(b) - rank(a))
 
