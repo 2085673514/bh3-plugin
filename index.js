@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Bh3Plugin } from './apps/main.js'
 import { scheduleCharacterAutoUpdate } from './lib/characterUpdater.js'
-import { scheduleDailyPush } from './lib/push.js'
+import { schedulePushReminder } from './lib/push.js'
 
 if (!globalThis.segment) {
   const oicq = await import('oicq')
@@ -21,8 +21,8 @@ if (globalThis.logger?.info) {
 // 启动后自动检查女武神数据库，过期或缺失时在后台从米游社图鉴重新抓取（不阻塞 Bot 启动）
 scheduleCharacterAutoUpdate()
 
-// 每日战绩推送（默认关闭，用 #崩坏3推送 开启）
-scheduleDailyPush(globalThis.logger)
+// 周常提醒：周日检查 + 深渊结算前 1.5 小时（默认关闭，用 #崩坏3推送 开启）
+schedulePushReminder(globalThis.logger)
 
 const apps = { Bh3Plugin }
 
