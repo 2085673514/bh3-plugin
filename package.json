@@ -9,10 +9,11 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "sqlite3": "^5.1.7"
+    "art-template": "^4.13.2"
   },
   "optionalDependencies": {
-    "puppeteer": "^22.15.0"
+    "puppeteer": "^22.15.0",
+    "sqlite3": "^5.1.7"
   },
   "scripts": {
     "update:data": "node ./scripts/build-characters.mjs"

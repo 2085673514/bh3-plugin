@@ -214,8 +214,11 @@ pnpm install
 
 依赖说明：
 
-- `sqlite3`：读取逍遥插件（xiaoyao-cvs-plugin）/喵喵共享数据库中的米游社 CK，实现"群友只发 UID 即可查询自己的面板"（共享 CK 仅 Bot 主人可用）。未安装时插件仍可用，但只能通过 `#崩坏3cookie` 手动配置 Cookie。
-- `puppeteer`（可选）：用于渲染帮助图与各类卡片。未安装时 `#崩坏3帮助` 自动回退为纯文本，卡片类命令提示制图失败。
+- `art-template`：渲染 `resources/html` 下的卡片模板，必需依赖。
+- `sqlite3`（可选，`optionalDependencies`）：读取逍遥插件（xiaoyao-cvs-plugin）/喵喵共享数据库中的米游社 CK，实现"群友只发 UID 即可查询自己的面板"（共享 CK 仅 Bot 主人可用）。未安装时插件仍可用，但只能通过 `#崩坏3cookie` 手动配置 Cookie。
+- `puppeteer`（可选，`optionalDependencies`）：用于渲染帮助图与各类卡片。未安装时 `#崩坏3帮助` 自动回退为纯文本，卡片类命令提示制图失败。
+
+关于浏览器路径：puppeteer 会优先找自己缓存里对应版本的 Chrome，找不到时插件会依次尝试系统 Chrome / Edge（Windows）、`/usr/bin/google-chrome` 等常见路径。若想指定浏览器，设置环境变量 `PUPPETEER_EXECUTABLE_PATH` 或 `CHROME_PATH` 即可，无需改代码。
 
 要求 Node.js >= 18（插件使用全局 `fetch`）。
 
