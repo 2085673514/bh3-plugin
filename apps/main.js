@@ -258,7 +258,7 @@ function buildHelp() {
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  参数：攻击 倍率% 增伤% 暴击率% 暴击伤害% 防御 抗性%，例：#崩坏3伤害 炎律 300 20 100 200',
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
-    '#崩坏3推送　　　　　　　　周常提醒总开关（主人）',
+    '#崩坏3推送　　　　　　　　周常提醒总开关（在哪个群开启就 @ 谁）',
     '#崩坏3推送深渊｜战场/乐土　　单独调整提醒时间或开关',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
@@ -893,17 +893,25 @@ export class Bh3Plugin extends plugin {
         const result = await runReminder({ force: true })
         if (result.skipped) return e.reply(`UID ${result.uid} 本期深渊/战场/乐土都已参与，没有发送提醒。`)
         const names = { abyss: '深渊', battlefield: '战场', godwar: '乐土' }
-        return e.reply(`提醒已发送给主人：UID ${result.uid}，未参与 ${result.missing.map(mode => names[mode]).join('、')}。`)
+        return e.reply(`提醒已发送：UID ${result.uid}，未参与 ${result.missing.map(mode => names[mode]).join('、')}。`)
       }
       if (action === '开启' || action === '开') {
-        const patch = { enabled: true }
+        const patch = {
+          enabled: true,
+          enabledBy: String(e.user_id || ''),
+          targetType: e.isGroup ? 'group' : 'private',
+          targetId: e.isGroup ? String(e.group_id || '') : '',
+        }
         if (arg) {
           if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 08:00。')
           patch.sundayTime = arg
         }
         const config = writePushConfig(patch)
         const hint = config.uid ? '' : '\n还没设置 UID，发 #崩坏3推送 UID <uid>。'
-        return e.reply(`周常提醒已开启：周三/周日 ${config.settleTime} 结算前 1.5 小时查深渊，周日 ${config.sundayTime} 查战场/乐土。${hint}`)
+        const where = config.targetType === 'group'
+          ? `到点会在本群 @ ${config.enabledBy}`
+          : `到点会私聊 ${config.enabledBy}`
+        return e.reply(`周常提醒已开启：周三/周日 ${config.settleTime} 结算前 1.5 小时查深渊，周日 ${config.sundayTime} 查战场/乐土；${where}。${hint}`)
       }
       if (action === '关闭' || action === '关') {
         writePushConfig({ enabled: false })
