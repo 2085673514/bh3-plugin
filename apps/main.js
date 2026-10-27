@@ -25,6 +25,13 @@ import { calculateDamage } from '../lib/damage.js'
 import { renderHelpImage } from '../lib/helpImage.js'
 import { renderCardImage } from '../lib/cardImage.js'
 import {
+  isValidTime,
+  pushStatusText,
+  readPushConfig,
+  runPush,
+  writePushConfig,
+} from '../lib/push.js'
+import {
   getBindUid,
   getCookie,
   getExternalCk,
@@ -251,6 +258,7 @@ function buildHelp() {
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  参数：攻击 倍率% 增伤% 暴击率% 暴击伤害% 防御 抗性%，例：#崩坏3伤害 炎律 300 20 100 200',
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
+    '#崩坏3推送　　　　　　　　定时推送战绩（主人）',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
     '#崩坏3图鉴 <关键词> [页码]　搜索图鉴（可翻页）',
@@ -304,6 +312,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(角色图|立绘|背景图|图鉴卡)\\s+([\\s\\S]+)$`, fnc: 'characterArtCommand' },
         { reg: `^${PREFIX}角色列表(?:\\s+(\\d{5,12}))?$`, fnc: 'showCharacters' },
         { reg: `^${PREFIX}(更新|刷新)角色库$`, fnc: 'refreshCharacters' },
+        { reg: `^${PREFIX}推送(?:\\s+([\\s\\S]+))?$`, fnc: 'pushCommand' },
         { reg: `^${PREFIX}图鉴详情\\s+(\\d+)\\s*$`, fnc: 'wikiDetailCommand' },
         { reg: `^${PREFIX}(图鉴|图鉴详情|角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s*$`, fnc: 'wikiUsage' },
         { reg: `^${PREFIX}(角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchByType' },
@@ -869,6 +878,69 @@ export class Bh3Plugin extends plugin {
     const type = String(match?.[2] || '')
     const keyword = String(match?.[3] || '').trim()
     return this.searchWiki(e, keyword, type)
+  }
+
+  /** 定时推送设置（仅 Bot 主人） */
+  async pushCommand(e) {
+    if (!isMaster(e)) return e.reply('只有 Bot 主人可以配置定时推送。')
+    const raw = String(e.msg || '').replace(new RegExp(`^${PREFIX}推送`), '').trim()
+    const [action = '', ...rest] = raw.split(/\s+/)
+    const arg = rest.join(' ').trim()
+    try {
+      if (!action || action === '状态') return e.reply(pushStatusText())
+      if (action === '测试') {
+        const result = await runPush({ force: true })
+        return e.reply(`推送已发送：UID ${result.uid}，${result.images} 张图，${result.targets} 个目标。`)
+      }
+      if (action === '开启' || action === '开') {
+        const patch = { enabled: true }
+        if (arg) {
+          if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 21:30。')
+          patch.time = arg
+        }
+        const config = writePushConfig(patch)
+        const hint = config.uid ? '' : '\n还没设置 UID，发 #崩坏3推送 UID <uid>。'
+        return e.reply(`定时推送已开启，每天 ${config.time}。${hint}`)
+      }
+      if (action === '关闭' || action === '关') {
+        writePushConfig({ enabled: false })
+        return e.reply('定时推送已关闭。')
+      }
+      if (/^uid$/i.test(action)) {
+        if (!/^\d{5,12}$/.test(arg)) return e.reply('UID 应为 5-12 位数字，例如 #崩坏3推送 UID 100000001。')
+        writePushConfig({ uid: arg })
+        return e.reply(`推送 UID 已设为 ${arg}。`)
+      }
+      if (action === '时间') {
+        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 21:30。')
+        const config = writePushConfig({ time: arg })
+        return e.reply(`推送时间已设为每天 ${config.time}。`)
+      }
+      if (action === '内容') {
+        const map = { 深渊: 'abyss', 战场: 'battlefield', 全部: 'both' }
+        const content = map[arg]
+        if (!content) return e.reply('内容可选：深渊 / 战场 / 全部。')
+        writePushConfig({ content })
+        return e.reply(`推送内容已设为${arg}。`)
+      }
+      if (action === '目标') {
+        const current = readPushConfig()
+        if (!arg || arg === '主人' || arg === '清空') {
+          writePushConfig({ targets: [{ type: 'master' }] })
+          return e.reply('推送目标已设为主人私聊。')
+        }
+        const match = arg.match(/^(群|好友)\s+(\d+)$/)
+        if (!match) return e.reply('目标用法：#崩坏3推送 目标 主人｜群 <群号>｜好友 <QQ号>｜清空')
+        const target = { type: match[1] === '群' ? 'group' : 'friend', id: match[2] }
+        const targets = [...current.targets]
+        if (!targets.some(item => item.type === target.type && String(item.id) === target.id)) targets.push(target)
+        writePushConfig({ targets })
+        return e.reply(`已添加推送目标：${match[1]} ${target.id}。当前共 ${targets.length} 个目标。`)
+      }
+      return e.reply(pushStatusText())
+    } catch (error) {
+      return e.reply(`推送设置失败：${error.message}`)
+    }
   }
 
   /**
