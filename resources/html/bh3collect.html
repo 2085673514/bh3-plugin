@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3 收集度</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 760px;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  /* 头部 */
+  .header {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .banner {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center 30%;
+    opacity: .45;
+  }
+  .header .banner.fallback { background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%); opacity: 1; }
+  .header .wrap {
+    position: relative;
+    display: flex; align-items: center; gap: 22px;
+    padding: 24px 28px;
+  }
+  .avatar {
+    width: 116px; height: 116px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.75);
+    background: rgba(255,255,255,.12);
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  .header .info { flex: 1; min-width: 0; }
+  .nickname {
+    font-size: 28px; font-weight: 800; letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .badge {
+    font-size: 13px; padding: 4px 12px; border-radius: 999px;
+    background: rgba(0,192,255,.16);
+    border: 1px solid rgba(0,192,255,.45);
+    color: #9fe4ff;
+  }
+  .badge.level { background: rgba(255,216,138,.16); border-color: rgba(255,216,138,.55); color: #ffd88a; }
+  .badge.uid { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: #c9d6e8; font-variant-numeric: tabular-nums; }
+
+  /* 统计块 */
+  .stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .stat-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .stat-grid.two { grid-template-columns: repeat(2, 1fr); }
+  .stat {
+    text-align: center;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 10px;
+    padding: 12px 4px 10px;
+  }
+  .stat .num { font-size: 22px; font-weight: 800; color: #ffd88a; font-variant-numeric: tabular-nums; }
+  .stat .lab { font-size: 12px; color: #9fb2c9; margin-top: 4px; }
+
+  /* 稀有度进度条 */
+  .rarity-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .rarity-row:first-of-type { margin-top: 12px; }
+  .rarity-label { width: 92px; font-size: 14px; color: #cdd9e8; }
+  .rarity-bar {
+    flex: 1; height: 14px; border-radius: 999px;
+    background: rgba(255,255,255,.09);
+    overflow: hidden;
+  }
+  .rarity-bar span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, #ffd88a, #ff9edb);
+    border-radius: 999px;
+  }
+  .rarity-value { width: 132px; text-align: right; font-size: 14px; color: #ffd88a; font-variant-numeric: tabular-nums; }
+  .rarity-value em { font-style: normal; color: #9fb2c9; font-size: 12px; }
+
+  /* 玩法行 */
+  .mode-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px dashed rgba(255,255,255,.09);
+    font-size: 14px;
+  }
+  .mode-row:last-child { border-bottom: 0; }
+  .mode-name { width: 96px; color: #9fb2c9; letter-spacing: 1px; }
+  .mode-main { font-size: 17px; font-weight: 700; color: #ffd88a; }
+  .mode-sub { color: #8ea3bd; font-size: 13px; }
+  .mode-tail { margin-left: auto; color: #9fb2c9; font-size: 13px; }
+
+  .footer {
+    margin-top: 18px; text-align: center;
+    font-size: 12px; color: #6f819b; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+  <div class="container" id="container">
+  <div class="header">
+    {{if headBg}}
+    <div class="banner" style="background-image:url('{{headBg}}')"></div>
+    {{else}}
+    <div class="banner fallback"></div>
+    {{/if}}
+    <div class="wrap">
+      <img class="avatar" src="{{avatarUrl}}" alt="头像">
+      <div class="info">
+        <div class="nickname">{{nickname}}</div>
+        <div class="badges">
+          <span class="badge level">Lv.{{level}}</span>
+          <span class="badge">{{serverName}}服</span>
+          <span class="badge uid">UID: {{uid}}</span>
+          {{if tags}}<span class="badge">{{tags}}</span>{{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 收集总览 -->
+  <div class="card">
+    <div class="sec-title"><i></i>收集总览</div>
+    <div class="stat-grid" style="margin-top:12px">
+      <div class="stat"><div class="num">{{activeDays}}</div><div class="lab">活跃天数</div></div>
+      <div class="stat"><div class="num">{{armorNum}}</div><div class="lab">装甲</div></div>
+      <div class="stat"><div class="num">{{sssNum}}</div><div class="lab">SSS 装甲</div></div>
+      <div class="stat"><div class="num">{{weaponNum}}</div><div class="lab">武器</div></div>
+      <div class="stat"><div class="num">{{stigmaNum}}</div><div class="lab">圣痕</div></div>
+      <div class="stat"><div class="num">{{suitNum}}</div><div class="lab">套装</div></div>
+    </div>
+  </div>
+
+  <!-- 高稀有度占比 -->
+  <div class="card">
+    <div class="sec-title"><i></i>高稀有度装备</div>
+    <div class="rarity-row">
+      <div class="rarity-label">五★武器</div>
+      <div class="rarity-bar"><span style="width:{{weaponPct}}%"></span></div>
+      <div class="rarity-value">{{fiveStarWeapon}} / {{weaponNum}} <em>({{weaponPct}}%)</em></div>
+    </div>
+    <div class="rarity-row">
+      <div class="rarity-label">五★圣痕</div>
+      <div class="rarity-bar"><span style="width:{{stigmaPct}}%"></span></div>
+      <div class="rarity-value">{{fiveStarStigmata}} / {{stigmaNum}} <em>({{stigmaPct}}%)</em></div>
+    </div>
+  </div>
+
+  <!-- 成就与探索 -->
+  <div class="card">
+    <div class="sec-title"><i></i>成就与探索</div>
+    <div class="stat-grid three" style="margin-top:12px">
+      <div class="stat"><div class="num">{{achievementNum}}</div><div class="lab">成就数</div></div>
+      <div class="stat"><div class="num">{{exploreScore}}</div><div class="lab">探索评分</div></div>
+      <div class="stat"><div class="num">{{exploreScoreSum}}</div><div class="lab">探索总分</div></div>
+    </div>
+  </div>
+
+  <!-- 玩法段位 -->
+  <div class="card">
+    <div class="sec-title"><i></i>玩法段位</div>
+    <div style="margin-top:6px">
+      <div class="mode-row">
+        <span class="mode-name">超弦空间</span>
+        <span class="mode-main">{{abyssLevel}}</span>
+        {{if abyssCup !== null}}<span class="mode-sub">{{abyssCup}} 杯</span>{{/if}}
+        <span class="mode-tail">本期得分 {{abyssScore}}</span>
+      </div>
+      <div class="mode-row">
+        <span class="mode-name">记忆战场</span>
+        <span class="mode-main">{{bfArea}}</span>
+        <span class="mode-sub">{{bfScore}} 分</span>
+        <span class="mode-tail">{{if bfRank}}排名 {{bfRank}}{{/if}}{{if bfPct}} · 前 {{bfPct}}%{{/if}}</span>
+      </div>
+      <div class="mode-row">
+        <span class="mode-name">往世乐土</span>
+        <span class="mode-main">{{gwScore}}</span>
+        <span class="mode-sub">最高挑战积分</span>
+        <span class="mode-tail">{{gwSupport}} 支援点{{if gwPunish}} · 惩罚 {{gwPunish}}{{/if}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 补给卡 -->
+  {{if hasCardCount}}
+  <div class="card">
+    <div class="sec-title"><i></i>补给卡余量</div>
+    <div class="stat-grid two" style="margin-top:12px">
+      <div class="stat"><div class="num">{{cardCount === null ? '—' : cardCount}}</div><div class="lab">本月可用</div></div>
+      <div class="stat"><div class="num">{{lastCardCount === null ? '—' : lastCardCount}}</div><div class="lab">上月获取</div></div>
+    </div>
+  </div>
+  {{/if}}
+
+  <div class="footer">数据来自米游社 · 仅统计本人舰长账号</div>
+  </div>
+</body>
+</html>

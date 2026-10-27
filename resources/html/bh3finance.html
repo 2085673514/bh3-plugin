@@ -134,6 +134,26 @@
 
   .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
 
+  /* 最近明细 */
+  .rec-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+  .rec-col { min-width: 0; }
+  .rec-title {
+    font-size: 13px; font-weight: 700; color: #a13570;
+    letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .rec-item {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    background: rgba(255,255,255,.35);
+    font-size: 12px; color: #57204a;
+    margin-bottom: 4px;
+  }
+  .rec-action { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rec-time { color: #7a4a9e; font-variant-numeric: tabular-nums; }
+  .rec-num { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .rec-num.up { color: #b23ac4; }
+  .rec-num.down { color: #c96a6a; }
+
   /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
   body, .container {
     background:
@@ -237,6 +257,43 @@
     <div class="empty">暂无上月数据</div>
     {{/if}}
   </div>
+
+  <!-- 最近明细 -->
+  {{if hasRecords}}
+  <div class="card">
+    <div class="sec-title"><i></i>最近明细</div>
+    <div class="rec-wrap">
+      <div class="rec-col">
+        <div class="rec-title">水晶</div>
+        {{if hcoinRecords.length}}
+        {{each hcoinRecords r}}
+        <div class="rec-item">
+          <span class="rec-action">{{r.action}}</span>
+          <span class="rec-time">{{r.time}}</span>
+          <span class="rec-num {{if r.num > 0}}up{{else}}down{{/if}}">{{r.numText}}</span>
+        </div>
+        {{/each}}
+        {{else}}
+        <div class="empty" style="padding:6px 0">暂无记录</div>
+        {{/if}}
+      </div>
+      <div class="rec-col">
+        <div class="rec-title">星石</div>
+        {{if starRecords.length}}
+        {{each starRecords r}}
+        <div class="rec-item">
+          <span class="rec-action">{{r.action}}</span>
+          <span class="rec-time">{{r.time}}</span>
+          <span class="rec-num {{if r.num > 0}}up{{else}}down{{/if}}">{{r.numText}}</span>
+        </div>
+        {{/each}}
+        {{else}}
+        <div class="empty" style="padding:6px 0">暂无记录</div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
 
 </div>
 </body>

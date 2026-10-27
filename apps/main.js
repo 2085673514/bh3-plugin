@@ -47,6 +47,7 @@ import {
   buildBattleCard as buildMysBattleCard,
   buildBattleFieldBoard,
   buildCharaCard as buildMysCharaCard,
+  buildCollectCard,
   buildFinanceCard,
   buildGachaCard,
   buildGodWarBoard,
@@ -246,6 +247,7 @@ function buildHelp() {
     '#崩坏3深渊战报 / #崩坏3战场战报　更多近期战报（含本地历史）',
     '#崩坏3一周成绩单　　　　一周成绩单（含本地历史）',
     '#崩坏3手帐　　　　　　　水晶手账（需绑定 Cookie）',
+    '#崩坏3收集度　　　　　　收集度统计（五★装备/成就/探索/段位/补给卡）',
     '',
     '【补给 / 道具记录】（米游社自助查询，需逍遥插件 stoken）',
     '#崩坏3更新抽卡记录 / #崩坏3刷新补给记录　更新并保存补给记录',
@@ -327,6 +329,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(一周成绩单|成绩单)(?=$|[\\s\\d])`, fnc: 'mysWeekly', log: false },
         { reg: `^${PREFIX}(舰长战报|战报)(?=$|[\\s\\d])`, fnc: 'mysReport', log: false },
         { reg: `^${PREFIX}(手帐|手账)(?=$|[\\s\\d])`, fnc: 'mysFinance', log: false },
+        { reg: `^${PREFIX}(收集度|收集)(?=$|@|[\\s\\d])`, fnc: 'mysCollect', log: false },
         { reg: `^${PREFIX}(更新|刷新)(抽卡|补给)记录`, fnc: 'mysUpdateGacha', log: false },
         { reg: `^${PREFIX}(更新|刷新)道具记录`, fnc: 'mysUpdateMaterial', log: false },
         { reg: `^${PREFIX}(抽卡记录|补给记录)`, fnc: 'mysGacha', log: false },
@@ -854,13 +857,23 @@ export class Bh3Plugin extends plugin {
         weaponType: dbChar?.weaponType || '',
         baseAttack: dbChar?.baseAttack || '',
         weapon: weapon?.name
-          ? { name: weapon.name, img: weapon.icon || '', rarity: weapon.rarity ?? weapon.max_rarity }
+          ? {
+              name: weapon.name,
+              img: weapon.icon || '',
+              rarity: weapon.rarity ?? weapon.max_rarity,
+              level: weapon.level,
+              homology: weapon.homology_level,
+            }
           : null,
         stigmatas: stigmatas.map(item => ({
           name: item.name || '',
           img: item.icon || '',
-          rarity: item.rarity,
+          rarity: item.rarity ?? item.max_rarity,
+          level: item.level,
         })),
+        costumes: (Array.isArray(first.costumes) ? first.costumes : [])
+          .filter(item => item?.name)
+          .map(item => ({ name: item.name, img: item.icon || '' })),
         elf: elf?.name
           ? { name: elf.name, img: elf.avatar || '', rarity: elf.rarity }
           : null,
@@ -921,6 +934,23 @@ export class Bh3Plugin extends plugin {
         if (!/^\d{5,12}$/.test(arg)) return e.reply('UID 应为 5-12 位数字，例如 #崩坏3推送 UID 100000001。')
         writePushConfig({ uid: arg })
         return e.reply(`提醒 UID 已设为 ${arg}。`)
+      }
+      // #崩坏3推送便签：体力/训练/活动结束提醒（每天同类只发一次）
+      if (['便签', '体力', '提醒'].includes(action)) {
+        const config = readPushConfig()
+        if (!arg) {
+          return e.reply(
+            `便签提醒：${config.noteEnabled ? '已开启' : '已关闭'}（总开关：${config.enabled ? '已开启' : '已关闭'}）\n` +
+              '开启后会在体力回满、训练完成、活动结束前 12 小时提醒你，同类提醒每天只发一次。\n' +
+              '用法：#崩坏3推送便签 [开启|关闭]',
+          )
+        }
+        if (['开启', '开', '关闭', '关'].includes(arg)) {
+          const enabled = arg === '开启' || arg === '开'
+          const next = writePushConfig({ noteEnabled: enabled })
+          return e.reply(`便签提醒已${enabled ? '开启' : '关闭'}（总开关：${next.enabled ? '已开启' : '已关闭'}）。`)
+        }
+        return e.reply('用法：#崩坏3推送便签 [开启|关闭]')
       }
       // #崩坏3推送深渊 / #崩坏3推送战场/乐土：查看或调整单个提醒（时间 / 开关）
       const part = ['深渊', '结算'].includes(action)
@@ -1405,6 +1435,15 @@ export class Bh3Plugin extends plugin {
       onData: (raw, role) => saveReports(role.uid, extractReportHistory(raw)),
       build: (raw, role) => buildWeeklyCard(raw, getReports(role.uid), role),
       tpl: 'html/bh3weekly',
+    })
+  }
+
+  /** #崩坏3收集度 收集度统计(高稀有装备/成就/探索/段位/补给卡) */
+  async mysCollect(e) {
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(收集度|收集)'), {
+      load: (api, role) => api.collect(role.uid, role.server),
+      build: (raw, role) => buildCollectCard(raw, role),
+      tpl: 'html/bh3collect',
     })
   }
 

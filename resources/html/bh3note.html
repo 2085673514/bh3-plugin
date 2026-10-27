@@ -103,6 +103,17 @@
   .act .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
   .act .tag.closed { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
   .act .remain { font-size: 11px; color: #9fb2c9; margin-left: 6px; flex: none; }
+  .act-extra {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 0 0 4px 2px;
+    font-size: 11px; color: #9fb2c9;
+  }
+  .act-extra span {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
 
   .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
 
@@ -124,7 +135,7 @@
   .nickname, .sec-title { color: #8e2f68 !important; }
   .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
   .sec-title i { background: #d64d94 !important; }
-  .sub, .recover, .stamina-num .max, .act .lab, .act .remain, .empty { color: #7a4a9e !important; }
+  .sub, .recover, .stamina-num .max, .act .lab, .act .remain, .act-extra, .act-extra span, .empty { color: #7a4a9e !important; }
   .sub b { color: #b23ac4 !important; }
   .train-row .val { color: #8e2f68 !important; }
   .train-row .val em { color: #b23ac4 !important; }
@@ -183,6 +194,11 @@
       <span class="tag {{if a.open}}open{{else}}closed{{/if}}">{{if a.open}}进行中{{else}}未开启{{/if}}</span>
       {{if a.remain}}<span class="remain">{{a.remain}}</span>{{/if}}
     </div>
+    {{if a.extra && a.extra.length}}
+    <div class="act-extra">
+      {{each a.extra e}}<span>{{e}}</span>{{/each}}
+    </div>
+    {{/if}}
     {{/each}}
     {{else}}
     <div class="empty">暂无活动数据</div>
