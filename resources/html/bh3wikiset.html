@@ -82,6 +82,10 @@
   .member .attr .s { margin-left: auto; font-size: 9px; color: #a95f92; }
   .member .chip { font-size: 10px; color: #8e2f68; background: rgba(255,255,255,.7); border-radius: 999px; padding: 1px 8px; }
   .member .word { font-size: 10px; color: #94507d; line-height: 1.45; text-align: center; }
+  .member.missing { border-style: dashed; background: rgba(255,255,255,.3); justify-content: center; min-height: 220px; }
+  .member.missing .ph { width: 92px; height: 92px; border-radius: 12px; background: rgba(255,255,255,.4); border: 1px dashed rgba(214,77,148,.35); }
+  .member.missing .who { color: #a95f92; font-weight: 600; }
+  .skill.inactive { opacity: .55; }
 
   .totals { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
   .total {
@@ -123,14 +127,22 @@
           {{each tags tag}}<span class="tag">{{tag}}</span>{{/each}}
         </div>
         {{/if}}
-        <div class="uid">共 {{count}} 件 · 上/中/下位</div>
+        <div class="uid">共 {{count}} 件{{if count < 3}}（未集齐）{{/if}}</div>
       </div>
     </div>
 
     <div class="panel">
       <div class="sec-title"><i></i>套装成员 <span class="hint">共 {{count}} 件</span></div>
       <div class="members">
-        {{each pieces piece}}
+        {{each slots piece}}
+        {{if piece.missing}}
+        <div class="member missing">
+          <span class="pos">{{piece.position}}位</span>
+          <div class="ph"></div>
+          <div class="who">缺少{{piece.position}}位</div>
+          <div class="nm">图鉴中暂无该部位数据</div>
+        </div>
+        {{else}}
         <div class="member">
           <span class="pos">{{piece.position}}位</span>
           {{if piece.icon}}<img src="{{piece.icon}}" alt="{{piece.character}}">{{/if}}
@@ -144,12 +156,13 @@
           {{if piece.subTag}}<span class="chip">{{piece.subTag}}</span>{{/if}}
           {{if piece.setTag}}<div class="word">{{piece.setTag}}</div>{{/if}}
         </div>
+        {{/if}}
         {{/each}}
       </div>
     </div>
 
     <div class="panel">
-      <div class="sec-title"><i></i>三件合计</div>
+      <div class="sec-title"><i></i>{{totalsLabel}}</div>
       <div class="totals">
         {{each totals total}}
         <div class="total"><span class="k">{{total.name}}</span><span class="v">{{total.value}}</span></div>
@@ -162,8 +175,8 @@
       <div class="sec-title"><i></i>套装技能 <span class="hint">{{setSkills.length}} 条</span></div>
       <div class="skills">
         {{each setSkills skill index}}
-        <div class="skill">
-          <span class="badge">{{index === 0 ? '2 件套' : '3 件套'}}</span>
+        <div class="skill{{if !skill.active}} inactive{{/if}}">
+          <span class="badge">{{skill.label}}{{if !skill.active}}（未集齐）{{/if}}</span>
           <div class="body">
             <div class="name">{{skill.name}}</div>
             <div class="desc">{{skill.desc}}</div>
@@ -174,11 +187,27 @@
     </div>
     {{/if}}
 
-    {{if pieces[0].skill || pieces[1].skill || pieces[2].skill}}
+    {{if gains.length}}
+    <div class="panel">
+      <div class="sec-title"><i></i>获取方式</div>
+      <div class="skills">
+        {{each gains gain}}
+        <div class="skill">
+          <div class="body">
+            <div class="name">{{gain.name}}</div>
+            <div class="desc">{{gain.value}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if hasPieceSkill}}
     <div class="panel">
       <div class="sec-title"><i></i>单件技能</div>
       <div class="skills">
-        {{each pieces piece}}
+        {{each slots piece}}
         {{if piece.skill}}
         <div class="skill">
           {{if piece.icon}}<img src="{{piece.icon}}" alt="{{piece.character}}">{{/if}}

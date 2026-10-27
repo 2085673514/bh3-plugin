@@ -94,6 +94,8 @@
   }
 
   .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
+  .trend { margin-top: 10px; }
+  .trend svg { display: block; width: 100%; height: auto; }
   .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
 </style>
 </head>
@@ -149,6 +151,13 @@
 
   {{if empty}}
   <div class="panel"><div class="empty">该账号暂无深渊成绩</div></div>
+  {{/if}}
+
+  {{if trend}}
+  <div class="panel">
+    <div class="sec-title"><i></i>{{trend.title}}<span class="hint">{{trend.points}} 期 · 均值 {{trend.avg}} · 最高 {{trend.max}}</span></div>
+    <div class="trend">{{@trend.svg}}</div>
+  </div>
   {{/if}}
 
   <div class="footer">{{footer}}</div>

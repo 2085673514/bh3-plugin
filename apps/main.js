@@ -6,9 +6,12 @@ import {
   buildWikiDetailCard,
   buildWikiListCard,
   buildWikiSetCard,
+  findWikiSet,
   formatWikiDetail,
+  rememberWikiSet,
   stigmaPosition,
   stigmaSetName,
+  WIKI_PAGE_SIZE,
   wikiDetail,
   wikiSearch,
 } from '../lib/wiki.js'
@@ -254,6 +257,8 @@ function buildHelp() {
     '#崩坏3角色图鉴 <名字>　　　角色图鉴',
     '#崩坏3武器图鉴 <名字>　　　武器图鉴',
     '#崩坏3圣痕图鉴 <名字>　　　圣痕图鉴',
+    '#崩坏3人偶图鉴 <名字>　　　人偶图鉴',
+    '#崩坏3协同者图鉴 <名字>　　协同者图鉴',
     '#崩坏3图鉴详情 <编号>　　　查看指定条目（圣痕自动三件套）',
     '',
     '提示：以上命令前缀也可使用「崩三」或「bbb」。',
@@ -300,6 +305,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}角色列表(?:\\s+(\\d{5,12}))?$`, fnc: 'showCharacters' },
         { reg: `^${PREFIX}(更新|刷新)角色库$`, fnc: 'refreshCharacters' },
         { reg: `^${PREFIX}图鉴详情\\s+(\\d+)\\s*$`, fnc: 'wikiDetailCommand' },
+        { reg: `^${PREFIX}(图鉴|图鉴详情|角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s*$`, fnc: 'wikiUsage' },
         { reg: `^${PREFIX}(角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchByType' },
         { reg: `^${PREFIX}(图鉴|查询|wiki)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchCommand' },
         { reg: `^${PREFIX}(面板|总览|我的|主页)(\\s+(\\d{5,12}))?$`, fnc: 'showIndex' },
@@ -869,7 +875,7 @@ export class Bh3Plugin extends plugin {
    * 圣痕上/中/下是三件套，能凑齐两件及以上时优先出一张套装卡
    * @returns {Promise<object|null>} 已发送图片时返回消息对象，否则 null
    */
-  async replyWikiSet(e, parsed) {
+  async replyWikiSet(e, parsed, extraIds = []) {
     if (parsed?.kind !== 'stigmata') return null
     const setName = stigmaSetName(parsed)
     const position = stigmaPosition(parsed)
@@ -877,8 +883,12 @@ export class Bh3Plugin extends plugin {
 
     const ids = new Set([String(parsed.id)])
     for (const relative of parsed.relatives || []) {
-      const id = String(relative?.url || '').match(/\/content\/(\d+)\//)?.[1]
+      const id = relative?.id || String(relative?.url || '').match(/\/content\/(\d+)\//)?.[1]
       if (id) ids.add(id)
+    }
+    // 本地套装索引里记过的兄弟件也一并纳入
+    for (const id of extraIds || []) {
+      if (id) ids.add(String(id))
     }
     // 少数套装没有 relatives，退化成按标题里的套装名搜索
     if (ids.size < 3) {
@@ -907,6 +917,9 @@ export class Bh3Plugin extends plugin {
     }
     if (pieces.length < 2) return null
 
+    // 攒下来的套装索引：下次可以直接按套装名搜
+    rememberWikiSet(setName, pieces.map(piece => ({ id: piece.id, position: stigmaPosition(piece) })))
+
     const setCard = buildWikiSetCard(pieces, { setName })
     const img = await this.renderMysHtml('html/bh3wikiset', setCard, {
       deviceScaleFactor: 1.8,
@@ -914,6 +927,17 @@ export class Bh3Plugin extends plugin {
       waitImages: 6000,
     })
     return img ? replyMysCard(e, img) : null
+  }
+
+  /** 只发了「#崩坏3图鉴」这类命令时给出用法，而不是静默无回复 */
+  async wikiUsage(e) {
+    return e.reply([
+      '图鉴命令用法：',
+      '#崩坏3图鉴 <关键词> [页码]　例：#崩坏3图鉴 西琳 2',
+      '#崩坏3角色图鉴｜武器图鉴｜圣痕图鉴｜人偶图鉴｜协同者图鉴 <名字>',
+      '#崩坏3图鉴详情 <编号>　例：#崩坏3图鉴详情 734',
+      '圣痕详情会自动合成上中下三件套，并展示 2/3 件套技能。',
+    ].join('\n'))
   }
 
   async wikiDetailCommand(e) {
@@ -978,7 +1002,7 @@ export class Bh3Plugin extends plugin {
         list = retry.list
         total = retry.total
       }
-      let maxPage = Math.max(1, Math.ceil(total / 15))
+      let maxPage = Math.max(1, Math.ceil(total / WIKI_PAGE_SIZE))
       let results = list
       let typeMissing = false
       // 完全匹配 / 前缀匹配排前面
@@ -1015,12 +1039,26 @@ export class Bh3Plugin extends plugin {
         } else {
           collected.sort((a, b) => rank(b) - rank(a))
           total = collected.length
-          maxPage = Math.max(1, Math.ceil(total / 15))
+          maxPage = Math.max(1, Math.ceil(total / WIKI_PAGE_SIZE))
           page = Math.min(Math.max(1, page), maxPage)
-          results = collected.slice((page - 1) * 15, page * 15)
+          results = collected.slice((page - 1) * WIKI_PAGE_SIZE, page * WIKI_PAGE_SIZE)
         }
       }
       results = results.slice().sort((a, b) => rank(b) - rank(a))
+
+      // 套装名（如「倾城古韵」）在搜索接口里搜不到，用本地攒下来的索引兜底
+      if (results.length === 0 || typeMissing) {
+        const indexed = findWikiSet(keyword) || findWikiSet(searchKeyword)
+        const indexedIds = indexed ? Object.values(indexed.pieces || {}).filter(Boolean) : []
+        if (indexedIds.length >= 2) {
+          const detail = await wikiDetail(indexedIds[0]).catch(() => null)
+          if (detail) {
+            const parsed = buildWikiDetailCard(detail)
+            const setReply = await this.replyWikiSet(e, parsed, indexedIds)
+            if (setReply) return setReply
+          }
+        }
+      }
 
       if (typeMissing) {
         return e.reply(`没有找到「${keyword}」的${type}条目，可以试试只发 #崩坏3图鉴 ${keyword}。`)

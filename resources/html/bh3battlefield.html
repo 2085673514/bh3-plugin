@@ -95,6 +95,8 @@
   .boss-score { flex: none; font-size: 20px; font-weight: 900; color: #b23ac4; font-variant-numeric: tabular-nums; }
 
   .empty { padding: 16px 0; text-align: center; font-size: 14px; color: #7a4a9e; }
+  .trend { margin-top: 10px; }
+  .trend svg { display: block; width: 100%; height: auto; }
   .footer { text-align: center; font-size: 12px; color: #8e5f9e; letter-spacing: 1px; }
 </style>
 </head>
@@ -145,6 +147,13 @@
     {{/each}}
     {{if empty}}<div class="empty">该账号暂无记忆战场成绩</div>{{/if}}
   </div>
+
+  {{if trend}}
+  <div class="panel">
+    <div class="sec-title"><i></i>{{trend.title}}<span class="hint">{{trend.points}} 期 · 均值 {{trend.avg}} · 最高 {{trend.max}}</span></div>
+    <div class="trend">{{@trend.svg}}</div>
+  </div>
+  {{/if}}
 
   <div class="footer">{{footer}}</div>
 </div>
