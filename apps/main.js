@@ -27,7 +27,6 @@ import { renderCardImage } from '../lib/cardImage.js'
 import {
   isValidTime,
   pushStatusText,
-  readPushConfig,
   runReminder,
   writePushConfig,
 } from '../lib/push.js'
@@ -258,7 +257,7 @@ function buildHelp() {
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  参数：攻击 倍率% 增伤% 暴击率% 暴击伤害% 防御 抗性%，例：#崩坏3伤害 炎律 300 20 100 200',
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
-    '#崩坏3推送　　　　　　　　周常参与提醒设置（主人）',
+    '#崩坏3推送　　　　　　　　周常提醒：深渊结算前 / 周日战场乐土（主人）',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
     '#崩坏3图鉴 <关键词> [页码]　搜索图鉴（可翻页）',
@@ -880,7 +879,7 @@ export class Bh3Plugin extends plugin {
     return this.searchWiki(e, keyword, type)
   }
 
-  /** 周常提醒设置（仅 Bot 主人）：周日 + 深渊结算前 1.5 小时检查是否参与深渊/战场/乐土 */
+  /** 周常提醒设置（仅 Bot 主人）：深渊结算前 1.5 小时查深渊，周日 08:00 查战场/乐土 */
   async pushCommand(e) {
     if (!isMaster(e)) return e.reply('只有 Bot 主人可以配置周常提醒。')
     const raw = String(e.msg || '').replace(new RegExp(`^${PREFIX}推送`), '').trim()
@@ -892,7 +891,7 @@ export class Bh3Plugin extends plugin {
         const result = await runReminder({ force: true })
         if (result.skipped) return e.reply(`UID ${result.uid} 本期深渊/战场/乐土都已参与，没有发送提醒。`)
         const names = { abyss: '深渊', battlefield: '战场', godwar: '乐土' }
-        return e.reply(`提醒已发送：UID ${result.uid}，未参与 ${result.missing.map(mode => names[mode]).join('、')}，${result.targets} 个目标。`)
+        return e.reply(`提醒已发送给主人：UID ${result.uid}，未参与 ${result.missing.map(mode => names[mode]).join('、')}。`)
       }
       if (action === '开启' || action === '开') {
         const patch = { enabled: true }
@@ -902,7 +901,7 @@ export class Bh3Plugin extends plugin {
         }
         const config = writePushConfig(patch)
         const hint = config.uid ? '' : '\n还没设置 UID，发 #崩坏3推送 UID <uid>。'
-        return e.reply(`周常提醒已开启：周日 ${config.sundayTime}，以及周一 ${config.settleTime} 结算前 1.5 小时检查。${hint}`)
+        return e.reply(`周常提醒已开启：周三/周日 ${config.settleTime} 结算前 1.5 小时查深渊，周日 ${config.sundayTime} 查战场/乐土。${hint}`)
       }
       if (action === '关闭' || action === '关') {
         writePushConfig({ enabled: false })
@@ -913,51 +912,15 @@ export class Bh3Plugin extends plugin {
         writePushConfig({ uid: arg })
         return e.reply(`提醒 UID 已设为 ${arg}。`)
       }
-      if (action === '@') {
-        if (!/^\d{5,12}$/.test(arg)) return e.reply('用法：#崩坏3推送 @ <QQ号>，例如 #崩坏3推送 @ 123456789。')
-        writePushConfig({ at: arg })
-        return e.reply(`群提醒会 @ ${arg}。`)
-      }
       if (action === '周日') {
         if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 08:00。')
         const config = writePushConfig({ sundayTime: arg })
-        return e.reply(`周日检查时间已设为 ${config.sundayTime}。`)
+        return e.reply(`周日战场/乐土检查时间已设为 ${config.sundayTime}。`)
       }
       if (action === '结算') {
-        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 04:00。')
+        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 22:00。')
         const config = writePushConfig({ settleTime: arg })
-        return e.reply(`深渊结算时间已设为周一 ${config.settleTime}，提醒会在结算前 1.5 小时发送。`)
-      }
-      if (action === '内容') {
-        const map = { 深渊: 'abyss', 战场: 'battlefield', 乐土: 'godwar', 全部: 'all' }
-        const modes = []
-        for (const word of arg.split(/[,，\s]+/).filter(Boolean)) {
-          if (word === '全部') {
-            modes.push('abyss', 'battlefield', 'godwar')
-            continue
-          }
-          const mode = map[word]
-          if (!mode) return e.reply('内容可选：深渊 / 战场 / 乐土 / 全部，也可以逗号组合，例如 深渊,战场。')
-          modes.push(mode)
-        }
-        if (modes.length === 0) return e.reply('内容可选：深渊 / 战场 / 乐土 / 全部。')
-        const config = writePushConfig({ modes: [...new Set(modes)] })
-        const names = { abyss: '深渊', battlefield: '战场', godwar: '乐土' }
-        return e.reply(`检查内容已设为：${config.modes.map(mode => names[mode]).join('、')}。`)
-      }
-      if (action === '目标') {
-        const current = readPushConfig()
-        if (!arg || arg === '主人' || arg === '清空') {
-          writePushConfig({ targets: [{ type: 'master' }] })
-          return e.reply('提醒目标已设为主人私聊。')
-        }
-        const match = arg.match(/^(群|好友)\s+(\d+)$/)
-        if (!match) return e.reply('目标用法：#崩坏3推送 目标 主人｜群 <群号>｜好友 <QQ号>｜清空')
-        const target = { type: match[1] === '群' ? 'group' : 'friend', id: match[2] }
-        const targets = [...current.targets]
-        if (!targets.some(item => item.type === target.type && String(item.id) === target.id)) targets.push(target)
-        writePushConfig({ targets })
-        return e.reply(`已添加提醒目标：${match[1]} ${target.id}。当前共 ${targets.length} 个目标。`)
+        return e.reply(`深渊结算时间已设为 ${config.settleTime}，提醒会在结算前 1.5 小时发送。`)
       }
       return e.reply(pushStatusText())
     } catch (error) {
