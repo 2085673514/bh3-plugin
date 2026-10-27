@@ -27,6 +27,7 @@ import { renderCardImage } from '../lib/cardImage.js'
 import {
   isValidTime,
   pushStatusText,
+  readPushConfig,
   runReminder,
   writePushConfig,
 } from '../lib/push.js'
@@ -257,7 +258,8 @@ function buildHelp() {
     '#崩坏3伤害 <角色> [攻击]　 伤害估算（攻击省略时自动用图鉴基础攻击）',
     '  参数：攻击 倍率% 增伤% 暴击率% 暴击伤害% 防御 抗性%，例：#崩坏3伤害 炎律 300 20 100 200',
     '#崩坏3更新角色库　　　　　主人手动刷新女武神数据库',
-    '#崩坏3推送　　　　　　　　周常提醒：深渊结算前 / 周日战场乐土（主人）',
+    '#崩坏3推送　　　　　　　　周常提醒总开关（主人）',
+    '#崩坏3推送深渊｜战场/乐土　　单独调整提醒时间或开关',
     '',
     '【图鉴查询】（公开数据，无需 Cookie）',
     '#崩坏3图鉴 <关键词> [页码]　搜索图鉴（可翻页）',
@@ -311,7 +313,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(角色图|立绘|背景图|图鉴卡)\\s+([\\s\\S]+)$`, fnc: 'characterArtCommand' },
         { reg: `^${PREFIX}角色列表(?:\\s+(\\d{5,12}))?$`, fnc: 'showCharacters' },
         { reg: `^${PREFIX}(更新|刷新)角色库$`, fnc: 'refreshCharacters' },
-        { reg: `^${PREFIX}推送(?:\\s+([\\s\\S]+))?$`, fnc: 'pushCommand' },
+        { reg: `^${PREFIX}推送(?:\\s*([\\s\\S]+))?$`, fnc: 'pushCommand' },
         { reg: `^${PREFIX}图鉴详情\\s+(\\d+)\\s*$`, fnc: 'wikiDetailCommand' },
         { reg: `^${PREFIX}(图鉴|图鉴详情|角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s*$`, fnc: 'wikiUsage' },
         { reg: `^${PREFIX}(角色图鉴|武器图鉴|圣痕图鉴|人偶图鉴|协同者图鉴)\\s+([\\s\\S]+)$`, fnc: 'wikiSearchByType' },
@@ -912,15 +914,34 @@ export class Bh3Plugin extends plugin {
         writePushConfig({ uid: arg })
         return e.reply(`提醒 UID 已设为 ${arg}。`)
       }
-      if (action === '周日') {
-        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 08:00。')
-        const config = writePushConfig({ sundayTime: arg })
-        return e.reply(`周日战场/乐土检查时间已设为 ${config.sundayTime}。`)
-      }
-      if (action === '结算') {
-        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 22:00。')
-        const config = writePushConfig({ settleTime: arg })
-        return e.reply(`深渊结算时间已设为 ${config.settleTime}，提醒会在结算前 1.5 小时发送。`)
+      // #崩坏3推送深渊 / #崩坏3推送战场/乐土：查看或调整单个提醒（时间 / 开关）
+      const part = ['深渊', '结算'].includes(action)
+        ? 'abyss'
+        : ['战场/乐土', '战场', '乐土', '周常', '周日'].includes(action)
+          ? 'weekly'
+          : ''
+      if (part) {
+        const config = readPushConfig()
+        const isAbyss = part === 'abyss'
+        const enabledKey = isAbyss ? 'abyssEnabled' : 'weeklyEnabled'
+        const timeKey = isAbyss ? 'settleTime' : 'sundayTime'
+        const label = isAbyss ? '深渊提醒' : '战场/乐土提醒'
+        if (!arg) {
+          const detail = isAbyss
+            ? `周三 / 周日 ${config.settleTime} 结算前 1.5 小时（${config.abyssEnabled ? '已开启' : '已关闭'}）`
+            : `周日 ${config.sundayTime} 检查战场 / 乐土（${config.weeklyEnabled ? '已开启' : '已关闭'}）`
+          return e.reply(`${label}：${detail}\n用法：#崩坏3推送${isAbyss ? '深渊' : '战场/乐土'} [HH:mm|开启|关闭]`)
+        }
+        if (arg === '开启' || arg === '开' || arg === '关闭' || arg === '关') {
+          const enabled = arg === '开启' || arg === '开'
+          const next = writePushConfig({ [enabledKey]: enabled })
+          return e.reply(`${label}已${enabled ? '开启' : '关闭'}（总开关：${next.enabled ? '已开启' : '已关闭'}）。`)
+        }
+        if (!isValidTime(arg)) return e.reply('时间格式应为 HH:mm，例如 08:00 / 22:00。')
+        const next = writePushConfig({ [timeKey]: arg })
+        return e.reply(isAbyss
+          ? `深渊结算时间已设为 ${next.settleTime}，提醒会在结算前 1.5 小时发送。`
+          : `战场/乐土检查时间已设为周日 ${next.sundayTime}。`)
       }
       return e.reply(pushStatusText())
     } catch (error) {
