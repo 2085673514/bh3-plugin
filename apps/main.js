@@ -62,7 +62,8 @@ import { SelfHelp, genAuthKey, getStokenByLtuid } from '../lib/mys/selfhelp.js'
 import { collectRecords, updateRecords } from '../lib/mys/record.js'
 import { renderMysTemplate, DEVICE_SCALE } from '../lib/mys/render.js'
 
-const PREFIX = '#?(崩坏3|崩三|bbb|bh3)'
+// 大小写不敏感：#BH3 / #Bbb / #BBb 都能命中（规则是字符串，无法带 i 标志，故用字符类）
+const PREFIX = '#?(崩坏3|崩三|[bB][bB][bB]|[bB][hH]3)'
 
 /** 从消息中剥离前缀与关键词，保留剩余参数(用于 honkai-mys 移植指令) */
 function stripMysKeyword(msg = '', keyword = '') {
@@ -596,24 +597,43 @@ export class Bh3Plugin extends plugin {
     }, uid)
   }
 
+  /** 取命令词后显式填写的 UID（可选），如「#崩坏3深渊 12345678」 */
+  matchExplicitUid(e, keywords) {
+    const match = String(e.msg || '').match(
+      new RegExp(`^${PREFIX}(${keywords})(?:\\s+(?<uid>\\d{5,12}))?$`),
+    )
+    return String(match?.groups?.uid || '').trim()
+  }
+
+  /** 并行拉取战绩接口：/index + 若干专项，单项失败不阻塞其余 */
+  async fetchBoard(uid, cookie, endpoints = []) {
+    const results = await Promise.allSettled([
+      recordRequest('/index', uid, {}, cookie),
+      ...endpoints.map(endpoint => recordRequest(endpoint, uid, {}, cookie)),
+    ])
+    const pick = result => (result.status === 'fulfilled' ? result.value : null)
+    return {
+      index: pick(results[0]),
+      values: results.slice(1).map(pick),
+      reasons: results.slice(1).map(result => (result.status === 'rejected' ? result.reason : null)),
+    }
+  }
+
+  /** 面板用的区服：优先接口返回，其次本地缓存 */
+  async boardServer(uid, index) {
+    return index?.role?.region || (await CookieMgr.getCachedRegion(uid).catch(() => ''))
+  }
+
   async showAbyss(e) {
-    const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(深渊|超弦)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uidValue, cookie) => {
-      const results = await Promise.allSettled([
-        recordRequest('/index', uidValue, {}, cookie),
-        recordRequest('/newAbyssReport', uidValue, {}, cookie),
-        recordRequest('/latestOldAbyssReport', uidValue, {}, cookie),
+      const { index, values, reasons } = await this.fetchBoard(uidValue, cookie, [
+        '/newAbyssReport',
+        '/latestOldAbyssReport',
       ])
-      const pick = result => (result.status === 'fulfilled' ? result.value : null)
-      const raw = {
-        index: pick(results[0]),
-        newAbyssReport: pick(results[1]),
-        latestOldAbyssReport: pick(results[2]),
-      }
-      const cachedRegion = await CookieMgr.getCachedRegion(uidValue).catch(() => '')
+      const raw = { index, newAbyssReport: values[0], latestOldAbyssReport: values[1] }
       const data = buildAbyssBoard(raw, {
         uid: uidValue,
-        server: raw.index?.role?.region || cachedRegion,
+        server: await this.boardServer(uidValue, index),
         nickname: '',
       })
       if (!data.empty) {
@@ -621,9 +641,7 @@ export class Bh3Plugin extends plugin {
         if (img) return replyMysCard(e, img)
       }
       // 图片渲染失败或暂无数据时回退文本卡片，保持旧行为
-      const errors = results.slice(1)
-        .filter(result => result.status === 'rejected')
-        .map(result => result.reason)
+      const errors = reasons.filter(Boolean)
       const legacyCards = []
       if (raw.newAbyssReport) legacyCards.push(buildAbyssCard(raw.newAbyssReport, '超弦空间'))
       if (raw.latestOldAbyssReport) legacyCards.push(buildAbyssCard(raw.latestOldAbyssReport, '量子奇点'))
@@ -637,33 +655,24 @@ export class Bh3Plugin extends plugin {
         text: text || '暂无深渊数据。',
         avatarGroups: legacyCards.flatMap(card => card.avatarGroups),
       })
-    }, String(match?.[4] || '').trim())
+    }, this.matchExplicitUid(e, '深渊|超弦'))
   }
 
   async showBattleField(e) {
-    const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(战场|记忆战场)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uid, cookie) => {
-      const results = await Promise.allSettled([
-        recordRequest('/index', uid, {}, cookie),
-        recordRequest('/battleFieldReport', uid, {}, cookie),
-      ])
-      const pick = result => (result.status === 'fulfilled' ? result.value : null)
-      const raw = {
-        index: pick(results[0]),
-        battleFieldReport: pick(results[1]),
-      }
-      const cachedRegion = await CookieMgr.getCachedRegion(uid).catch(() => '')
+      const { index, values, reasons } = await this.fetchBoard(uid, cookie, ['/battleFieldReport'])
+      const raw = { index, battleFieldReport: values[0] }
       const data = buildBattleFieldBoard(raw, {
         uid,
-        server: raw.index?.role?.region || cachedRegion,
+        server: await this.boardServer(uid, index),
         nickname: '',
       })
       if (!data.empty) {
         const img = await this.renderMysHtml('html/bh3battlefield', data, { deviceScaleFactor: 1.6, quality: 82, waitImages: 7000 })
         if (img) return replyMysCard(e, img)
       }
-      if (!raw.battleFieldReport && results[1].status === 'rejected') {
-        return e.reply(`战场查询失败：${results[1].reason?.message || "未知错误"}`)
+      if (!raw.battleFieldReport && reasons[0]) {
+        return e.reply(`战场查询失败：${reasons[0]?.message || "未知错误"}`)
       }
       const card = buildBattleFieldCard(raw.battleFieldReport || {})
       return this.replyWithCard(e, {
@@ -672,33 +681,24 @@ export class Bh3Plugin extends plugin {
         text: card.text,
         avatarGroups: card.avatarGroups,
       })
-    }, String(match?.[4] || '').trim())
+    }, this.matchExplicitUid(e, '战场|记忆战场'))
   }
 
   async showGodWar(e) {
-    const match = String(e.msg || '').match(new RegExp(`^${PREFIX}(逐光)(\\s+(\\d{5,12}))?$`))
     return this.withUid(e, async (uid, cookie) => {
-      const results = await Promise.allSettled([
-        recordRequest('/index', uid, {}, cookie),
-        recordRequest('/godWar', uid, {}, cookie),
-      ])
-      const pick = result => (result.status === 'fulfilled' ? result.value : null)
-      const raw = {
-        index: pick(results[0]),
-        godWar: pick(results[1]),
-      }
-      const cachedRegion = await CookieMgr.getCachedRegion(uid).catch(() => '')
+      const { index, values, reasons } = await this.fetchBoard(uid, cookie, ['/godWar'])
+      const raw = { index, godWar: values[0] }
       const data = buildGodWarBoard(raw, {
         uid,
-        server: raw.index?.role?.region || cachedRegion,
+        server: await this.boardServer(uid, index),
         nickname: '',
       })
       if (!data.empty) {
         const img = await this.renderMysHtml('html/bh3godwar', data, { deviceScaleFactor: 1.8, quality: 82, waitImages: 9000 })
         if (img) return replyMysCard(e, img)
       }
-      if (!raw.godWar && results[1].status === 'rejected') {
-        return e.reply(`逐光查询失败：${results[1].reason?.message || "未知错误"}`)
+      if (!raw.godWar && reasons[0]) {
+        return e.reply(`逐光查询失败：${reasons[0]?.message || "未知错误"}`)
       }
       const card = buildGodWarCard(raw.godWar || {})
       return this.replyWithCard(e, {
@@ -708,7 +708,7 @@ export class Bh3Plugin extends plugin {
         stats: card.stats,
         avatarGroups: card.avatarGroups,
       })
-    }, String(match?.[4] || '').trim())
+    }, this.matchExplicitUid(e, '逐光'))
   }
 
   async damageCommand(e) {
@@ -1313,9 +1313,16 @@ export class Bh3Plugin extends plugin {
     return null
   }
 
-  /** #崩坏3 / #bh3 玩家卡片 */
-  async mysCard(e) {
-    const text = stripMysKeyword(e.msg)
+  /**
+   * mys 系列命令的公共骨架：解析角色 → 拉数据 → 出图 → 回复
+   * @param {string} text 去掉前缀/关键词后的参数
+   * @param {object} options
+   * @param {(api: Bh3, role: object) => Promise<any>} options.load 拉取接口数据
+   * @param {(raw: any, role: object) => object} options.build 组装模板数据
+   * @param {string|((raw: any, role: object) => string)} options.tpl 模板名
+   * @param {(raw: any, role: object) => void} [options.onData] 出图前的副作用（如保存战报）
+   */
+  async replyMysTemplate(e, text, { load, build, tpl, onData }) {
     let role
     try {
       role = await this.resolveMysRole(e, text)
@@ -1324,118 +1331,81 @@ export class Bh3Plugin extends plugin {
     }
     let raw
     try {
-      raw = await new Bh3(role.cookie).part(role.uid, role.server)
+      raw = await load(new Bh3(role.cookie), role)
     } catch (err) {
       return e.reply(err.message, false, { at: true })
     }
-    const img = await this.renderMysHtml('html/bh3card', buildIndexCard(raw, role))
+    if (onData) onData(raw, role)
+    const template = typeof tpl === 'function' ? tpl(raw, role) : tpl
+    const img = await this.renderMysHtml(template, build(raw, role))
     return replyMysCard(e, img)
+  }
+
+  /** #崩坏3 / #bh3 玩家卡片 */
+  async mysCard(e) {
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg), {
+      load: (api, role) => api.part(role.uid, role.server),
+      build: (raw, role) => buildIndexCard(raw, role),
+      tpl: 'html/bh3card',
+    })
   }
 
   /** #崩坏3角色 / #bh3角色 拥有的女武神列表 */
   async mysChara(e) {
-    const text = stripMysKeyword(e.msg, '角色')
-    let role
-    try {
-      role = await this.resolveMysRole(e, text)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    const api = new Bh3(role.cookie)
-    let raw
-    try {
-      const [index, characters] = await Promise.all([
-        api.index(role.uid, role.server),
-        api.characters(role.uid, role.server),
-      ])
-      raw = { index, characters }
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    const img = await this.renderMysHtml('html/bh3chara', buildMysCharaCard(raw, role))
-    return replyMysCard(e, img)
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '角色'), {
+      load: async (api, role) => {
+        const [index, characters] = await Promise.all([
+          api.index(role.uid, role.server),
+          api.characters(role.uid, role.server),
+        ])
+        return { index, characters }
+      },
+      build: (raw, role) => buildMysCharaCard(raw, role),
+      tpl: 'html/bh3chara',
+    })
   }
 
   /** #崩坏3体力 / #崩坏3便笺 实时便签(honkai-mys 卡片) */
   async mysNote(e) {
-    const text = stripMysKeyword(e.msg, '(体力|便签|便笺|实时便签|实时便笺)')
-    let role
-    try {
-      role = await this.resolveMysRole(e, text)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    let raw
-    try {
-      raw = await new Bh3(role.cookie).note(role.uid, role.server)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    const img = await this.renderMysHtml('html/bh3note', buildNoteCard(raw, role))
-    return replyMysCard(e, img)
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(体力|便签|便笺|实时便签|实时便笺)'), {
+      load: (api, role) => api.note(role.uid, role.server),
+      build: (raw, role) => buildNoteCard(raw, role),
+      tpl: 'html/bh3note',
+    })
   }
 
   /** #崩坏3战报 舰长战报 */
   async mysReport(e) {
-    const text = stripMysKeyword(e.msg, '(舰长战报|战报)')
-    let role
-    try {
-      role = await this.resolveMysRole(e, text)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    let raw
-    try {
-      raw = await new Bh3(role.cookie).part(role.uid, role.server)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    saveReports(role.uid, extractReportHistory(raw))
-    const img = await this.renderMysHtml('html/bh3report', buildReportCard(raw, role))
-    return replyMysCard(e, img)
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(舰长战报|战报)'), {
+      load: (api, role) => api.part(role.uid, role.server),
+      onData: (raw, role) => saveReports(role.uid, extractReportHistory(raw)),
+      build: (raw, role) => buildReportCard(raw, role),
+      tpl: 'html/bh3report',
+    })
   }
 
   /** #崩坏3深渊战报 / #崩坏3战场战报(更多近期记录) */
   async mysBranchReport(e) {
     const isAbyss = /深渊战报/.test(e.msg)
-    const text = stripMysKeyword(e.msg, '(深渊战报|战场战报)')
-    let role
-    try {
-      role = await this.resolveMysRole(e, text)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    let raw
-    try {
-      raw = await new Bh3(role.cookie).part(role.uid, role.server)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    saveReports(role.uid, extractReportHistory(raw))
-    const history = getReports(role.uid)
-    const data = isAbyss ? buildMysAbyssCard(raw, role, history) : buildMysBattleCard(raw, role, history)
-    const img = await this.renderMysHtml(isAbyss ? 'html/bh3abyss' : 'html/bh3battle', data)
-    return replyMysCard(e, img)
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(深渊战报|战场战报)'), {
+      load: (api, role) => api.part(role.uid, role.server),
+      onData: (raw, role) => saveReports(role.uid, extractReportHistory(raw)),
+      build: (raw, role) => {
+        const history = getReports(role.uid)
+        return isAbyss ? buildMysAbyssCard(raw, role, history) : buildMysBattleCard(raw, role, history)
+      },
+      tpl: isAbyss ? 'html/bh3abyss' : 'html/bh3battle',
+    })
   }
 
   /** #崩坏3一周成绩单(当前 + 本地历史) */
   async mysWeekly(e) {
-    const text = stripMysKeyword(e.msg, '(一周成绩单|成绩单)')
-    let role
-    try {
-      role = await this.resolveMysRole(e, text)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    let raw
-    try {
-      raw = await new Bh3(role.cookie).part(role.uid, role.server)
-    } catch (err) {
-      return e.reply(err.message, false, { at: true })
-    }
-    saveReports(role.uid, extractReportHistory(raw))
-    const img = await this.renderMysHtml('html/bh3weekly', buildWeeklyCard(raw, getReports(role.uid), role))
-    return replyMysCard(e, img)
+    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(一周成绩单|成绩单)'), {
+      load: (api, role) => api.part(role.uid, role.server),
+      onData: (raw, role) => saveReports(role.uid, extractReportHistory(raw)),
+      build: (raw, role) => buildWeeklyCard(raw, getReports(role.uid), role),
+      tpl: 'html/bh3weekly',
+    })
   }
 
   /** #崩坏3手帐 水晶手账 */
