@@ -88,24 +88,25 @@
   /* 活动 */
   .act {
     display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; row-gap: 4px;
     padding: 15px 4px;
     border-bottom: 1px dashed rgba(255,255,255,.08);
     white-space: nowrap;
   }
   .act:last-child { border-bottom: none; }
-  .act .name { font-size: 14px; font-weight: 700; width: 72px; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .act .val { font-size: 17px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; flex: none; }
-  .act .lab { font-size: 11px; color: #9fb2c9; flex: none; }
+  .act .name { font-size: 13px; font-weight: 700; flex: none; white-space: nowrap; }
+  .act .val { font-size: 16px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; flex: none; }
+  .act .lab { font-size: 10.5px; color: #9fb2c9; flex: none; }
   .act .tag {
-    margin-left: auto; font-size: 11px; font-weight: 700;
-    border-radius: 999px; padding: 3px 10px; flex: none;
+    margin-left: auto; font-size: 10.5px; font-weight: 700;
+    border-radius: 999px; padding: 2px 9px; flex: none;
   }
   .act .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
   .act .tag.closed { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
   .act .remain { font-size: 11px; color: #9fb2c9; margin-left: 6px; flex: none; }
   .act-extra {
     display: flex; flex-wrap: wrap; gap: 8px;
-    padding: 0 0 4px 2px;
+    padding: 0 0 10px 2px;
     font-size: 11px; color: #9fb2c9;
   }
   .act-extra span {
@@ -114,6 +115,7 @@
     border-radius: 999px;
     padding: 1px 8px;
   }
+  .act-extra .time { background: none; border: none; padding: 0; }
 
   .empty { text-align: center; color: #9fb2c9; font-size: 14px; padding: 20px 0; }
 
@@ -192,10 +194,10 @@
       <span class="val">{{a.value}}</span>
       <span class="lab">{{a.valueLabel}}</span>
       <span class="tag {{if a.open}}open{{else}}closed{{/if}}">{{if a.open}}进行中{{else}}未开启{{/if}}</span>
-      {{if a.remain}}<span class="remain">{{a.remain}}</span>{{/if}}
     </div>
-    {{if a.extra && a.extra.length}}
+    {{if a.remain || (a.extra && a.extra.length)}}
     <div class="act-extra">
+      {{if a.remain}}<span class="time">{{a.remain}}</span>{{/if}}
       {{each a.extra e}}<span>{{e}}</span>{{/each}}
     </div>
     {{/if}}
