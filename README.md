@@ -1,6 +1,6 @@
 # bh3-plugin 崩坏3全功能查询插件（个人自用改版）
 
-> **个人自用改版**：本仓库基于 [QWEfcxzz/bh3-plugin](https://github.com/QWEfcxzz/bh3-plugin) 修改，其中玩家卡片 / 战报 / 手帐 / 角色面板等卡片由 [chingkingm/honkai_mys](https://github.com/chingkingm/honkai_mys) 迁移而来；**补给（抽卡）记录、道具记录、收集度统计、手帐收支明细、便签提醒等为本仓库自行新增，并非迁自 honkai_mys**（详见[本仓库新增功能](#本仓库新增功能)）。仅作个人自用，不保证稳定性，也不一定跟进上游更新。
+> **个人自用改版**：本仓库基于 [QWEfcxzz/bh3-plugin](https://github.com/QWEfcxzz/bh3-plugin) 修改，玩家卡片 / 战报 / 手帐 / 角色面板等卡片由 [chingkingm/honkai_mys](https://github.com/chingkingm/honkai_mys) 迁移而来；补给（抽卡）记录与道具记录为本仓库自行实现，并非迁自 honkai_mys。仅作个人自用，不保证稳定性，也不一定跟进上游更新。
 
 面向 Yunzai / TRSS-Yunzai 的崩坏3（Honkai Impact 3rd）查询插件，支持战绩查询与公开图鉴查询。
 
@@ -53,11 +53,11 @@
 | 帮助 | `#崩坏3帮助` | 爱莉希雅主题帮助图 |
 | 帮助 | `#崩坏3帮助文本` | 纯文本帮助 |
 
-> 补给 / 道具记录通过米游社「自助查询」接口拉取，依赖逍遥插件保存的 `stoken` 自动换取查询凭据；数据保存在 `data/honkai-mys/`。这部分是本仓库自行实现的新功能，honkai_mys 并没有对应能力。
+> 补给 / 道具记录通过米游社「自助查询」接口拉取，依赖逍遥插件保存的 `stoken` 自动换取查询凭据；数据保存在 `data/honkai-mys/`。
 
-## 本仓库新增功能
+## 新增功能
 
-以下功能为基于上游 [QWEfcxzz/bh3-plugin](https://github.com/QWEfcxzz/bh3-plugin) 与本仓库自行开发的部分，**不是从 [honkai_mys](https://github.com/chingkingm/honkai_mys) 迁移的**（honkai_mys 是 Python/HoshinoBot 插件，只提供玩家卡片、战报、手帐与角色面板等）。
+以下功能是在上游基础上新增或扩展的部分：
 
 | 功能 | 命令 | 说明 |
 | --- | --- | --- |
@@ -66,7 +66,7 @@
 | 便签提醒 | `#崩坏3推送便签 [开启\|关闭]` | 每 30 分钟查一次实时便签：体力回满、每日训练完成、深渊 / 战场 / 乐土在 12 小时内结束且奖励未满时推送提醒，同类每天只提醒一次（发送失败不占用当日额度） |
 | 便签卡片增强 | `#崩坏3体力` | 深渊合并为一条并显示段位（苦痛Ⅲ / 红莲 / 寂灭…），补充深渊组别、战场 SSS 奖励进度与各玩法剩余时间 |
 | 角色装备详情 | `#崩坏3角色 <角色名>` | 面板补充武器等级 / 同律等级、圣痕等级、服装列表，稀有度取实际星级 |
-| 补给 / 道具记录 | `#崩坏3抽卡记录`、`#崩坏3抽卡统计`、`#崩坏3道具记录` 等 | 走米游社「自助查询」接口，按卡池记录出货与抽数、统计 S 级 / 5★，数据落盘到 `data/honkai-mys/` |
+| 补给 / 道具记录 | `#崩坏3抽卡记录`、`#崩坏3抽卡统计`、`#崩坏3道具记录` 等 | 本仓库自行实现（非迁自 honkai_mys）：走米游社「自助查询」接口，按卡池记录出货与抽数、统计 S 级 / 5★，数据落盘到 `data/honkai-mys/` |
 
 此外还有一批工程化改进（不新增命令，但影响可用性）：
 
@@ -190,7 +190,7 @@
 - 记忆战场 / 往世乐土：以**周一 04:00** 周重置为界，**周日 08:00** 检查本周是否参与。
 - 参与判定：最新战绩时间晚于本期起点即视为已参与；同一检查点最多尝试 3 次，成功后不再重复，结算后不再提醒。
 - 深渊提醒与战场/乐土提醒可分别开关：`#崩坏3推送深渊 关闭`、`#崩坏3推送战场/乐土 开启`。
-- **便签提醒**（本仓库新增）：每 30 分钟查一次实时便签，体力回满、每日训练完成、深渊 / 战场 / 乐土在 12 小时内结束且奖励未满时推送；同类提醒每天只发一次，发送失败不占用当天额度，下一个周期会重试。可单独 `#崩坏3推送便签 关闭`，总开关关闭时一并不生效。
+- **便签提醒**：每 30 分钟查一次实时便签，体力回满、每日训练完成、深渊 / 战场 / 乐土在 12 小时内结束且奖励未满时推送；同类提醒每天只发一次，发送失败不占用当天额度，下一个周期会重试。可单独 `#崩坏3推送便签 关闭`，总开关关闭时一并不生效。
 - 只提醒开启推送的人：在群里发送「开启」→ 到点在该群 @ 你；私聊发送「开启」→ 私聊提醒。UID 必须已绑定 Cookie（私聊发送 `#崩坏3cookie <uid> <cookie>`）。
 - 配置保存在 `data/bh3/push.json`，运行状态在 `data/bh3/push-state.json`。
 - 也可用环境变量 `BH3_PUSH_ENABLED` / `BH3_PUSH_ABYSS` / `BH3_PUSH_WEEKLY` / `BH3_PUSH_NOTE` / `BH3_PUSH_UID` / `BH3_PUSH_SUNDAY_TIME` / `BH3_PUSH_SETTLE_TIME` 覆盖。
@@ -282,7 +282,7 @@ npm run update:data
 | 项目 | 贡献 |
 | --- | --- |
 | [QWEfcxzz/bh3-plugin](https://github.com/QWEfcxzz/bh3-plugin) | 原始插件框架：战绩查询、公开图鉴、角色数据库与爱莉希雅帮助图 |
-| [chingkingm/honkai_mys](https://github.com/chingkingm/honkai_mys) | 玩家卡片、战报、手帐、角色面板等卡片的来源与接口思路（Python/HoshinoBot 插件；补给与道具记录、收集度、便签提醒**不是**来自它） |
+| [chingkingm/honkai_mys](https://github.com/chingkingm/honkai_mys) | 玩家卡片、战报、手帐、角色面板等卡片的来源与接口思路 |
 | [yoimiya-kokomi/Miao-Yunzai](https://github.com/yoimiya-kokomi/Miao-Yunzai)、[TimeRainStarSky/Yunzai](https://github.com/TimeRainStarSky/Yunzai) | 插件运行的 Yunzai / TRSS-Yunzai 框架 |
 | [yoimiya-kokomi/miao-plugin](https://github.com/yoimiya-kokomi/miao-plugin) | 角色面板的配色、卡片布局与数据组织方式参考 |
 | [ctrlcvs/xiaoyao-cvs-plugin](https://github.com/ctrlcvs/xiaoyao-cvs-plugin)（逍遥插件） | 共享米游社 CK / `stoken`，让「只发 UID 就能查自己的面板」成为可能 |
