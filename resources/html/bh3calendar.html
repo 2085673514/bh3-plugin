@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>崩坏3活动日历</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 560px;
+    background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: #e8eef7;
+    padding: 24px 26px 30px;
+  }
+  .container { position: relative; }
+  .copyright { display: none; }
+
+  .card {
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+
+  .header {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
+  }
+  .header .wrap { padding: 22px 28px; text-align: center; }
+  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+  .sub { margin-top: 8px; font-size: 13px; color: #9fb2c9; }
+  .sub b { color: #ffd88a; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 本期进度 */
+  .act {
+    display: flex; align-items: center; gap: 8px;
+    padding: 13px 2px;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+    white-space: nowrap;
+  }
+  .act:last-child { border-bottom: none; }
+  .act .name { font-size: 13px; font-weight: 700; flex: none; }
+  .act .val { font-size: 16px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; flex: none; }
+  .act .lab { font-size: 10.5px; color: #9fb2c9; flex: none; }
+  .act .remain { margin-left: auto; font-size: 11px; color: #9fb2c9; flex: none; }
+  .act .tag {
+    font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 9px; flex: none;
+  }
+  .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
+  .tag.closed { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
+
+  /* 时间线 */
+  .day-group { margin-top: 14px; }
+  .day-group:first-child { margin-top: 8px; }
+  .day-head {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 13px; font-weight: 700; color: #ffd88a;
+    margin-bottom: 6px;
+  }
+  .day-head .wd { font-size: 11px; color: #9fb2c9; font-weight: 500; }
+  .ev {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 10px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
+  }
+  .ev .time {
+    font-size: 12px; font-weight: 700; color: #9fe4ff;
+    font-variant-numeric: tabular-nums; flex: none;
+  }
+  .ev .tag { flex: none; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; }
+  .ev .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.35); }
+  .ev .tag.settle { color: #ffb3c8; background: rgba(255,120,160,.14); border: 1px solid rgba(255,120,160,.35); }
+  .ev .tag.reset { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
+  .ev .title { font-size: 12.5px; color: #e8eef7; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ev .cd { font-size: 11px; color: #9fb2c9; flex: none; }
+
+  .empty { text-align: center; color: #9fb2c9; font-size: 13px; padding: 16px 0; }
+  .hint { margin-top: 8px; font-size: 11px; color: #9fb2c9; }
+  .footer { margin-top: 16px; text-align: center; font-size: 11px; color: #7a4a9e; }
+
+  /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
+  body, .container {
+    background:
+      radial-gradient(900px 480px at 82% -8%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
+      radial-gradient(640px 420px at 12% 6%, rgba(255,214,232,0.95), rgba(255,214,232,0) 68%),
+      radial-gradient(760px 520px at 78% 52%, rgba(232,178,244,0.75), rgba(232,178,244,0) 66%),
+      linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
+    color: #57204a;
+  }
+  .card {
+    background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
+    border-color: rgba(214,77,148,0.4) !important;
+    box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
+  }
+  .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .nickname, .sec-title, .day-head { color: #8e2f68 !important; }
+  .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
+  .sec-title i { background: #d64d94 !important; }
+  .sub, .act .lab, .act .remain, .day-head .wd, .ev .cd, .empty, .hint { color: #7a4a9e !important; }
+  .act .val { color: #b23ac4 !important; text-shadow: 0 0 24px rgba(178,58,196,0.3) !important; }
+  .act { border-color: rgba(214,77,148,0.25) !important; }
+  .ev { background: rgba(255,255,255,0.42) !important; border-color: rgba(214,77,148,0.25) !important; }
+  .ev .title { color: #57204a !important; }
+  .ev .time { color: #8e35c9 !important; }
+  .tag.open, .ev .tag.open { color: #7a3fae !important; background: rgba(178,58,196,0.12) !important; border-color: rgba(178,58,196,0.4) !important; }
+  .tag.closed { color: #8a6b86 !important; background: rgba(255,255,255,0.45) !important; border-color: rgba(214,77,148,0.25) !important; }
+  .ev .tag.settle { color: #b03a6a !important; background: rgba(214,77,148,0.14) !important; border-color: rgba(214,77,148,0.4) !important; }
+  .ev .tag.reset { color: #7a4a9e !important; background: rgba(255,255,255,0.5) !important; border-color: rgba(214,77,148,0.25) !important; }
+  .footer { color: #8a6b86 !important; }
+</style>
+</head>
+<body{{if sys && sys.scale}} style="zoom:{{sys.scale}}"{{/if}}>
+<div class="container" id="container">
+
+  <div class="header">
+    <div class="wrap">
+      <div class="nickname">{{if nickname}}{{nickname}}{{else}}舰长{{/if}} 的活动日历</div>
+      <div class="sub">UID: <b>{{uid}}</b> · {{serverName}}服 · 未来 {{days}} 天</div>
+    </div>
+  </div>
+
+  <!-- 本期进度 -->
+  <div class="card">
+    <div class="sec-title"><i></i>本期进度</div>
+    {{if activities.length}}
+    {{each activities a}}
+    <div class="act">
+      <span class="name">{{a.name}}</span>
+      <span class="val">{{a.value}}</span>
+      <span class="lab">{{a.valueLabel}}</span>
+      <span class="tag {{if a.open}}open{{else}}closed{{/if}}">{{if a.open}}进行中{{else}}未开启{{/if}}</span>
+      {{if a.remain}}<span class="remain">{{a.remain}}</span>{{/if}}
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">暂无进行中的玩法</div>
+    {{/if}}
+  </div>
+
+  <!-- 未来节点 -->
+  <div class="card">
+    <div class="sec-title"><i></i>接下来的节点</div>
+    <div class="hint">每日 {{dailyReset}} 日常重置 · 每周一 04:00 周常重置</div>
+    {{if groups.length}}
+    {{each groups g}}
+    <div class="day-group">
+      <div class="day-head">{{g.dateText}}<span class="wd">{{g.weekday}}</span></div>
+      {{each g.items e}}
+      <div class="ev">
+        <span class="time">{{e.timeText}}</span>
+        <span class="tag {{if e.tag === '开放'}}open{{else if e.tag === '结算'}}settle{{else}}reset{{/if}}">{{e.tag}}</span>
+        <span class="title">{{e.title}}</span>
+        <span class="cd">{{e.countdown}}</span>
+      </div>
+      {{/each}}
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">未来 {{days}} 天没有固定节点</div>
+    {{/if}}
+  </div>
+
+  <div class="footer">按游戏内固定节奏推算 · 生成于 {{generatedAt}}</div>
+</div>
+</body>
+</html>
