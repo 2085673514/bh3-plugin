@@ -23,6 +23,7 @@ import {
 import { readCharacterMeta, updateCharacterData } from '../lib/characterUpdater.js'
 import { calculateDamage } from '../lib/damage.js'
 import { buildCalendarEvents } from '../lib/calendar.js'
+import { loadEventData } from '../lib/calendarData.js'
 import { renderHelpImage } from '../lib/helpImage.js'
 import { renderCardImage } from '../lib/cardImage.js'
 import {
@@ -250,7 +251,7 @@ function buildHelp() {
     '#崩坏3一周成绩单　　　　一周成绩单（含本地历史）',
     '#崩坏3手帐　　　　　　　水晶手账（需绑定 Cookie）',
     '#崩坏3收集度　　　　　　收集度统计（五★装备/成就/探索/段位/补给卡）',
-    '#崩坏3活动日历　　　　　本期玩法进度 + 未来 7 天固定节点（深渊开放/结算、周常重置）',
+    '#崩坏3活动日历　　　　　卡池/活动时间表 + 未来 7 天周常节点（周常部分无需 Cookie）',
     '',
     '【补给 / 道具记录】（米游社自助查询，需逍遥插件 stoken）',
     '#崩坏3更新抽卡记录 / #崩坏3刷新补给记录　更新并保存补给记录',
@@ -1451,18 +1452,28 @@ export class Bh3Plugin extends plugin {
     })
   }
 
-  /** #崩坏3活动日历 本期玩法进度 + 未来 7 天固定节点 */
+  /** #崩坏3活动日历 卡池 / 活动（数据文件）+ 未来 7 天周常节点（本地推算，无需 Cookie） */
   async mysCalendar(e) {
-    const config = readPushConfig()
+    const now = new Date()
     const days = 7
-    return this.replyMysTemplate(e, stripMysKeyword(e.msg, '(活动日历|日历)'), {
-      load: (api, role) => api.note(role.uid, role.server),
-      build: (raw, role) => buildCalendarCard(
-        { note: raw, events: buildCalendarEvents(new Date(), { days, settleTime: config.settleTime }), days },
-        role,
-      ),
-      tpl: 'html/bh3calendar',
+    const config = readPushConfig()
+    const weeklyEvents = buildCalendarEvents(now, { days, settleTime: config.settleTime })
+    let calendar = { pools: [], events: [], source: "none", configured: false }
+    try {
+      calendar = await loadEventData(now)
+    } catch (error) {
+      globalThis.logger?.warn?.(`[bh3] 读取活动日历数据失败：${error.message}`)
+    }
+    const data = buildCalendarCard({
+      pools: calendar.pools,
+      events: calendar.events,
+      weeklyEvents,
+      days,
+      source: calendar.source,
+      configured: calendar.configured,
     })
+    const img = await this.renderMysHtml('html/bh3calendar', data)
+    return replyMysCard(e, img)
   }
 
   /** #崩坏3手帐 水晶手账 */

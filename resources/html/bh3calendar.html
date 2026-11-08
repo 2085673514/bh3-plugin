@@ -30,6 +30,7 @@
   }
   .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
   .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
+  .sec-title .cnt { font-size: 11px; font-weight: 400; color: #9fb2c9; letter-spacing: 0; }
 
   .header {
     border-radius: 16px;
@@ -38,59 +39,63 @@
     background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
   }
   .header .wrap { padding: 22px 28px; text-align: center; }
-  .nickname { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+  .title { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
   .sub { margin-top: 8px; font-size: 13px; color: #9fb2c9; }
-  .sub b { color: #ffd88a; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-  /* 本期进度 */
-  .act {
-    display: flex; align-items: center; gap: 8px;
-    padding: 13px 2px;
-    border-bottom: 1px dashed rgba(255,255,255,.08);
-    white-space: nowrap;
+  /* 卡池 / 活动条目 */
+  .item {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.07);
   }
-  .act:last-child { border-bottom: none; }
-  .act .name { font-size: 13px; font-weight: 700; flex: none; }
-  .act .val { font-size: 16px; font-weight: 800; color: #00c0ff; font-variant-numeric: tabular-nums; flex: none; }
-  .act .lab { font-size: 10.5px; color: #9fb2c9; flex: none; }
-  .act .remain { margin-left: auto; font-size: 11px; color: #9fb2c9; flex: none; }
-  .act .tag {
-    font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 9px; flex: none;
+  .item:first-of-type { margin-top: 10px; }
+  .item-top { display: flex; align-items: center; gap: 8px; }
+  .item-name { font-size: 14px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; flex: none; }
+  .chip.type { color: #9fe4ff; background: rgba(0,192,255,.12); border: 1px solid rgba(0,192,255,.35); }
+  .chip.ongoing { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
+  .chip.upcoming { color: #ffd88a; background: rgba(255,216,138,.14); border: 1px solid rgba(255,216,138,.4); }
+  .chip.ended { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
+  .item-time {
+    margin-top: 6px;
+    font-size: 11.5px; color: #9fb2c9;
+    font-variant-numeric: tabular-nums;
   }
-  .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.4); }
-  .tag.closed { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
+  .item-note { margin-top: 4px; font-size: 11.5px; color: #c9d6e8; }
+  .item-bar {
+    margin-top: 8px; height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,.08); overflow: hidden;
+  }
+  .item-bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #00c0ff, #5cc8ff); }
+  .item-bar span.upcoming { background: linear-gradient(90deg, #ffd88a, #ffb84d); }
+  .item-cd { margin-top: 6px; font-size: 11px; color: #9fb2c9; }
 
-  /* 时间线 */
+  .empty { text-align: center; color: #9fb2c9; font-size: 13px; padding: 16px 0; }
+  .hint { margin-top: 8px; font-size: 11px; color: #9fb2c9; line-height: 1.7; }
+  .hint code { color: #ffd88a; }
+
+  /* 周常时间线 */
   .day-group { margin-top: 14px; }
-  .day-group:first-child { margin-top: 8px; }
-  .day-head {
-    display: flex; align-items: baseline; gap: 8px;
-    font-size: 13px; font-weight: 700; color: #ffd88a;
-    margin-bottom: 6px;
-  }
+  .day-group:first-of-type { margin-top: 8px; }
+  .day-head { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; color: #ffd88a; margin-bottom: 6px; }
   .day-head .wd { font-size: 11px; color: #9fb2c9; font-weight: 500; }
   .ev {
     display: flex; align-items: center; gap: 8px;
-    padding: 9px 10px;
-    margin-bottom: 6px;
+    padding: 9px 10px; margin-bottom: 6px;
     border-radius: 10px;
     background: rgba(255,255,255,.05);
     border: 1px solid rgba(255,255,255,.07);
   }
-  .ev .time {
-    font-size: 12px; font-weight: 700; color: #9fe4ff;
-    font-variant-numeric: tabular-nums; flex: none;
-  }
+  .ev .time { font-size: 12px; font-weight: 700; color: #9fe4ff; font-variant-numeric: tabular-nums; flex: none; }
   .ev .tag { flex: none; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; }
   .ev .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.35); }
   .ev .tag.settle { color: #ffb3c8; background: rgba(255,120,160,.14); border: 1px solid rgba(255,120,160,.35); }
   .ev .tag.reset { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
   .ev .title { font-size: 12.5px; color: #e8eef7; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .ev .cd { font-size: 11px; color: #9fb2c9; flex: none; }
-
-  .empty { text-align: center; color: #9fb2c9; font-size: 13px; padding: 16px 0; }
-  .hint { margin-top: 8px; font-size: 11px; color: #9fb2c9; }
-  .footer { margin-top: 16px; text-align: center; font-size: 11px; color: #7a4a9e; }
+  .footer { margin-top: 16px; text-align: center; font-size: 11px; color: #8a6b86; }
 
   /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
   body, .container {
@@ -107,17 +112,23 @@
     box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
   }
   .header { background: linear-gradient(135deg, #f6d9f0 0%, #e6c8f4 100%) !important; border-color: rgba(214,77,148,0.4) !important; }
-  .nickname, .sec-title, .day-head { color: #8e2f68 !important; }
+  .title, .sec-title, .day-head { color: #8e2f68 !important; }
   .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
   .sec-title i { background: #d64d94 !important; }
-  .sub, .act .lab, .act .remain, .day-head .wd, .ev .cd, .empty, .hint { color: #7a4a9e !important; }
-  .act .val { color: #b23ac4 !important; text-shadow: 0 0 24px rgba(178,58,196,0.3) !important; }
-  .act { border-color: rgba(214,77,148,0.25) !important; }
+  .sub, .sec-title .cnt, .item-time, .item-cd, .day-head .wd, .ev .cd, .empty, .hint, .item-note { color: #7a4a9e !important; }
+  .item { background: rgba(255,255,255,0.42) !important; border-color: rgba(214,77,148,0.25) !important; }
+  .item-name { color: #57204a !important; }
+  .item-bar { background: rgba(214,77,148,0.15) !important; }
+  .item-bar span { background: linear-gradient(90deg, #d64d94, #b23ac4) !important; }
+  .item-bar span.upcoming { background: linear-gradient(90deg, #ffb84d, #ffd88a) !important; }
+  .chip.type { color: #8e35c9 !important; background: rgba(142,53,201,0.1) !important; border-color: rgba(142,53,201,0.35) !important; }
+  .chip.ongoing { color: #7a3fae !important; background: rgba(178,58,196,0.12) !important; border-color: rgba(178,58,196,0.4) !important; }
+  .chip.upcoming { color: #b03a6a !important; background: rgba(255,184,77,0.18) !important; border-color: rgba(214,77,148,0.35) !important; }
+  .chip.ended { color: #8a6b86 !important; background: rgba(255,255,255,0.45) !important; border-color: rgba(214,77,148,0.25) !important; }
   .ev { background: rgba(255,255,255,0.42) !important; border-color: rgba(214,77,148,0.25) !important; }
   .ev .title { color: #57204a !important; }
   .ev .time { color: #8e35c9 !important; }
-  .tag.open, .ev .tag.open { color: #7a3fae !important; background: rgba(178,58,196,0.12) !important; border-color: rgba(178,58,196,0.4) !important; }
-  .tag.closed { color: #8a6b86 !important; background: rgba(255,255,255,0.45) !important; border-color: rgba(214,77,148,0.25) !important; }
+  .ev .tag.open { color: #7a3fae !important; background: rgba(178,58,196,0.12) !important; border-color: rgba(178,58,196,0.4) !important; }
   .ev .tag.settle { color: #b03a6a !important; background: rgba(214,77,148,0.14) !important; border-color: rgba(214,77,148,0.4) !important; }
   .ev .tag.reset { color: #7a4a9e !important; background: rgba(255,255,255,0.5) !important; border-color: rgba(214,77,148,0.25) !important; }
   .footer { color: #8a6b86 !important; }
@@ -128,33 +139,68 @@
 
   <div class="header">
     <div class="wrap">
-      <div class="nickname">{{if nickname}}{{nickname}}{{else}}舰长{{/if}} 的活动日历</div>
-      <div class="sub">UID: <b>{{uid}}</b> · {{serverName}}服 · 未来 {{days}} 天</div>
+      <div class="title">崩坏3 活动日历</div>
+      <div class="sub">未来 {{days}} 天 · 生成于 {{generatedAt}}</div>
     </div>
   </div>
 
-  <!-- 本期进度 -->
+  <!-- 卡池 -->
   <div class="card">
-    <div class="sec-title"><i></i>本期进度</div>
-    {{if activities.length}}
-    {{each activities a}}
-    <div class="act">
-      <span class="name">{{a.name}}</span>
-      <span class="val">{{a.value}}</span>
-      <span class="lab">{{a.valueLabel}}</span>
-      <span class="tag {{if a.open}}open{{else}}closed{{/if}}">{{if a.open}}进行中{{else}}未开启{{/if}}</span>
-      {{if a.remain}}<span class="remain">{{a.remain}}</span>{{/if}}
+    <div class="sec-title"><i></i>卡池<span class="cnt">{{pools.length}} 个</span></div>
+    {{if pools.length}}
+    {{each pools p}}
+    <div class="item">
+      <div class="item-top">
+        <span class="item-name">{{p.name}}</span>
+        {{if p.type}}<span class="chip type">{{p.type}}</span>{{/if}}
+        <span class="chip {{p.status}}">{{p.statusText}}</span>
+      </div>
+      <div class="item-time">{{p.startText}} ~ {{p.endText}}</div>
+      {{if p.note}}<div class="item-note">{{p.note}}</div>{{/if}}
+      <div class="item-bar"><span class="{{if p.status === 'upcoming'}}upcoming{{/if}}" style="width:{{p.progress}}%"></span></div>
+      <div class="item-cd">{{p.countdown}}</div>
     </div>
     {{/each}}
     {{else}}
-    <div class="empty">暂无进行中的玩法</div>
+    <div class="empty">未配置卡池数据</div>
     {{/if}}
   </div>
 
-  <!-- 未来节点 -->
+  <!-- 活动 -->
   <div class="card">
-    <div class="sec-title"><i></i>接下来的节点</div>
-    <div class="hint">每日 {{dailyReset}} 日常重置 · 每周一 04:00 周常重置</div>
+    <div class="sec-title"><i></i>活动<span class="cnt">{{events.length}} 个</span></div>
+    {{if events.length}}
+    {{each events v}}
+    <div class="item">
+      <div class="item-top">
+        <span class="item-name">{{v.name}}</span>
+        {{if v.type}}<span class="chip type">{{v.type}}</span>{{/if}}
+        <span class="chip {{v.status}}">{{v.statusText}}</span>
+      </div>
+      <div class="item-time">{{v.startText}} ~ {{v.endText}}</div>
+      {{if v.note}}<div class="item-note">{{v.note}}</div>{{/if}}
+      <div class="item-bar"><span class="{{if v.status === 'upcoming'}}upcoming{{/if}}" style="width:{{v.progress}}%"></span></div>
+      <div class="item-cd">{{v.countdown}}</div>
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="empty">未配置活动数据</div>
+    {{/if}}
+    {{if !hasEventData}}
+    <div class="hint">
+      米游社未提供公开的崩坏3公告接口，卡池 / 活动时间需要本地维护：<br>
+      写好 <code>data/bh3/calendar.json</code>（结构见 README），或设置环境变量 <code>BH3_CALENDAR_URL</code> 指向同结构的远程 JSON。
+    </div>
+    {{/if}}
+  </div>
+
+  <!-- 周常节点 -->
+  <div class="card">
+    <div class="sec-title"><i></i>周常节点</div>
+    <div class="hint">每日 04:00 日常重置 · 每周一 04:00 周常重置 · 不需要绑定 Cookie</div>
+    {{if nextEvent}}
+    <div class="hint" style="margin-top:6px">下一个节点：{{nextEvent.dateText}} {{nextEvent.timeText}} {{nextEvent.title}}（{{nextEvent.countdown}}）</div>
+    {{/if}}
     {{if groups.length}}
     {{each groups g}}
     <div class="day-group">
@@ -174,7 +220,7 @@
     {{/if}}
   </div>
 
-  <div class="footer">按游戏内固定节奏推算 · 生成于 {{generatedAt}}</div>
+  <div class="footer">周常节点按游戏内固定节奏推算{{if dataSource}} · 卡池/活动数据来源：{{dataSource}}{{/if}}</div>
 </div>
 </body>
 </html>
