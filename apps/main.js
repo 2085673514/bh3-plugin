@@ -1452,12 +1452,13 @@ export class Bh3Plugin extends plugin {
     })
   }
 
-  /** #崩坏3活动日历 卡池 / 活动（数据文件）+ 未来 7 天周常节点（本地推算，无需 Cookie） */
+  /** #崩坏3活动日历 卡池 / 活动（公告解析）+ 周常节点（本地推算，无需 Cookie） */
   async mysCalendar(e) {
     const now = new Date()
-    const days = 7
+    const weeklyDays = 7
+    const axisDays = 14
     const config = readPushConfig()
-    const weeklyEvents = buildCalendarEvents(now, { days, settleTime: config.settleTime })
+    const weeklyEvents = buildCalendarEvents(now, { days: weeklyDays, settleTime: config.settleTime })
     let calendar = { pools: [], events: [], source: "none", configured: false }
     try {
       calendar = await loadEventData(now)
@@ -1468,7 +1469,7 @@ export class Bh3Plugin extends plugin {
       pools: calendar.pools,
       events: calendar.events,
       weeklyEvents,
-      days,
+      days: axisDays,
       source: calendar.source,
       configured: calendar.configured,
     })

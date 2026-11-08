@@ -7,7 +7,7 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    width: 620px;
+    width: 760px;
     background: linear-gradient(160deg, #0b1220 0%, #101b2e 55%, #16263f 100%);
     font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
     color: #e8eef7;
@@ -16,109 +16,136 @@
   .container { position: relative; }
   .copyright { display: none; }
 
-  .card {
-    background: rgba(255,255,255,.045);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-top: 14px;
-  }
-  .sec-title {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 15px; font-weight: 700; color: #ffd88a;
-    letter-spacing: 2px;
-  }
-  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
-  .sec-title i { font-style: normal; width: 10px; height: 10px; border-radius: 3px; background: #ffd88a; transform: rotate(45deg); }
-  .sec-title .cnt { font-size: 11px; font-weight: 400; color: #9fb2c9; letter-spacing: 0; }
-
   .header {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,.1);
     background: linear-gradient(135deg, #1c2e4d 0%, #24406b 100%);
   }
-  .header .wrap { padding: 22px 28px 20px; text-align: center; }
-  .title { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
-  .sub { margin-top: 8px; font-size: 13px; color: #9fb2c9; }
+  .header .wrap { padding: 20px 26px 18px; }
+  .header .top { display: flex; align-items: baseline; gap: 12px; }
+  .title { font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+  .range { font-size: 12px; color: #9fb2c9; margin-left: auto; }
+  .summary { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: #9fb2c9; }
+  .summary b { color: #ffd88a; font-size: 15px; font-weight: 800; margin-right: 2px; font-variant-numeric: tabular-nums; }
 
-  /* 概览 */
-  .summary { display: flex; gap: 10px; margin-top: 14px; }
-  .sum {
-    flex: 1; text-align: center;
-    background: rgba(255,255,255,.06);
+  .card {
+    background: rgba(255,255,255,.045);
     border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px;
-    padding: 10px 6px;
+    border-radius: 14px;
+    padding: 14px 18px 16px;
+    margin-top: 14px;
   }
-  .sum .n { font-size: 20px; font-weight: 800; color: #ffd88a; font-variant-numeric: tabular-nums; }
-  .sum .l { font-size: 11px; color: #9fb2c9; margin-top: 2px; }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: #ffd88a;
+    letter-spacing: 2px;
+  }
+  .sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,216,138,.45), transparent); }
+  .sec-title i { font-style: normal; width: 9px; height: 9px; border-radius: 2px; background: #ffd88a; transform: rotate(45deg); }
+  .sec-title .cnt { font-size: 11px; font-weight: 400; color: #9fb2c9; letter-spacing: 0; }
 
-  /* 卡池 / 活动条目 */
-  .item {
-    display: flex; align-items: stretch; gap: 12px;
-    margin-top: 12px;
-    padding: 12px 14px 12px 0;
-    border-radius: 12px;
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.07);
+  /* 甘特图 */
+  .cal { margin-top: 10px; }
+  .axis-row { display: flex; align-items: flex-end; }
+  .axis-spacer { flex: none; width: 192px; }
+  .axis { position: relative; flex: 1; height: 26px; }
+  .axis .tick {
+    position: absolute; bottom: 0;
+    font-size: 10px; color: #8ea3bd;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transform: translateX(-2px);
+  }
+  .axis .tick.today { color: #ffd88a; font-weight: 700; }
+
+  .rows { position: relative; margin-top: 6px; }
+  .row { display: flex; align-items: center; height: 34px; }
+  .row .lab {
+    flex: none; width: 192px; padding-right: 10px;
+    display: flex; align-items: center; gap: 6px;
+    min-width: 0;
+  }
+  .row .nm {
+    font-size: 12px; color: #e8eef7;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .chip {
+    flex: none; font-size: 9.5px; font-weight: 700;
+    border-radius: 999px; padding: 0 6px; line-height: 15px;
+  }
+  .chip.type-role { color: #ffd2ef; background: rgba(214,77,148,.28); border: 1px solid rgba(255,158,219,.5); }
+  .chip.type-weapon { color: #cfe9ff; background: rgba(0,150,255,.22); border: 1px solid rgba(92,200,255,.5); }
+  .chip.type-costume { color: #ffe9c2; background: rgba(255,180,90,.2); border: 1px solid rgba(255,216,138,.5); }
+  .chip.type-home { color: #dfe7f0; background: rgba(160,180,200,.18); border: 1px solid rgba(200,215,230,.4); }
+  .chip.type-other { color: #c9ffe9; background: rgba(58,209,160,.18); border: 1px solid rgba(58,209,160,.45); }
+
+  .track {
+    position: relative; flex: 1; height: 24px;
+    background-image: linear-gradient(to right, rgba(255,255,255,.09) 1px, transparent 1px);
+    background-size: {{(100 / axisDays).toFixed(3)}}% 100%;
+    background-repeat: repeat-x;
+    border-left: 1px solid rgba(255,255,255,.12);
+    border-right: 1px solid rgba(255,255,255,.12);
+    border-radius: 4px;
+  }
+  .bar {
+    position: absolute; top: 2px; height: 20px;
+    border-radius: 6px;
+    display: flex; align-items: center;
+    padding: 0 7px;
     overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.28);
   }
-  .item:first-of-type { margin-top: 10px; }
-  .accent { width: 4px; flex: none; border-radius: 0 4px 4px 0; background: #00c0ff; }
-  .accent.type-role { background: linear-gradient(180deg, #ff9edb, #b23ac4); }
-  .accent.type-weapon { background: linear-gradient(180deg, #5cc8ff, #8e35c9); }
-  .accent.type-costume { background: linear-gradient(180deg, #ffd88a, #ff9edb); }
-  .accent.type-home { background: linear-gradient(180deg, #9fb2c9, #6f819b); }
-  .accent.type-other { background: linear-gradient(180deg, #3ad1a0, #00c0ff); }
+  .bar .bl { font-size: 10.5px; font-weight: 600; color: #fff; opacity: .95; }
+  .bar.type-role { background: linear-gradient(90deg, #d64d94, #b23ac4); }
+  .bar.type-weapon { background: linear-gradient(90deg, #2f8fd8, #5c63cf); }
+  .bar.type-costume { background: linear-gradient(90deg, #e08a3c, #d64d94); }
+  .bar.type-home { background: linear-gradient(90deg, #6f819b, #95a6bd); }
+  .bar.type-other { background: linear-gradient(90deg, #1f9f7a, #2f8fd8); }
+  .bar.upcoming { opacity: .55; }
+  .bar.ended { opacity: .35; }
 
-  .body { flex: 1; min-width: 0; }
-  .row-top { display: flex; align-items: center; gap: 8px; }
-  .item-name { font-size: 14px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chip { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; flex: none; }
-  .chip.type { color: #9fe4ff; background: rgba(0,192,255,.12); border: 1px solid rgba(0,192,255,.35); }
-  .item-time { margin-top: 6px; font-size: 11.5px; color: #9fb2c9; font-variant-numeric: tabular-nums; }
-  .item-note { margin-top: 4px; font-size: 11.5px; color: #c9d6e8; }
-  .item-bar {
-    margin-top: 8px; height: 6px; border-radius: 999px;
-    background: rgba(255,255,255,.08); overflow: hidden;
+  .outside {
+    position: absolute; top: 4px;
+    font-size: 10px; color: #9fb2c9;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  .item-bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #00c0ff, #5cc8ff); }
-  .item-bar span.upcoming { background: linear-gradient(90deg, #ffd88a, #ffb84d); }
-  .item-bar span.ended { background: rgba(255,255,255,.25); }
-
-  .item-cd { margin-top: 5px; font-size: 10.5px; color: #9fb2c9; }
-  .right { flex: none; width: 84px; text-align: center; align-self: center; }
-  .days { font-size: 24px; font-weight: 800; line-height: 1; color: #ffd88a; font-variant-numeric: tabular-nums; }
-  .days em { font-style: normal; font-size: 12px; font-weight: 700; margin-left: 2px; }
-  .days.upcoming { color: #9fe4ff; font-size: 18px; }
-  .days.ended { color: #8a6b86; font-size: 16px; }
-  .days-lab { margin-top: 3px; font-size: 10.5px; color: #9fb2c9; }
-  .days-cd { margin-top: 2px; font-size: 10px; color: #9fb2c9; }
+  .nowline {
+    position: absolute; top: 0; bottom: 0; width: 1px;
+    background: #ff5c8a;
+    box-shadow: 0 0 6px rgba(255,92,138,.8);
+  }
+  .nowline::before {
+    content: ""; position: absolute; top: -4px; left: -3px;
+    width: 7px; height: 7px; border-radius: 50%; background: #ff5c8a;
+  }
 
   .empty { text-align: center; color: #9fb2c9; font-size: 13px; padding: 16px 0; }
   .hint { margin-top: 8px; font-size: 11px; color: #9fb2c9; line-height: 1.7; }
   .hint code { color: #ffd88a; }
 
   /* 周常时间线 */
-  .day-group { margin-top: 14px; }
-  .day-group:first-of-type { margin-top: 8px; }
-  .day-head { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; color: #ffd88a; margin-bottom: 6px; }
+  .day-group { margin-top: 12px; }
+  .day-group:first-of-type { margin-top: 6px; }
+  .day-head { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; font-weight: 700; color: #ffd88a; margin-bottom: 4px; }
   .day-head .wd { font-size: 11px; color: #9fb2c9; font-weight: 500; }
   .ev {
     display: flex; align-items: center; gap: 8px;
-    padding: 9px 10px; margin-bottom: 6px;
-    border-radius: 10px;
+    padding: 7px 10px; margin-bottom: 5px;
+    border-radius: 9px;
     background: rgba(255,255,255,.05);
     border: 1px solid rgba(255,255,255,.07);
   }
   .ev .time { font-size: 12px; font-weight: 700; color: #9fe4ff; font-variant-numeric: tabular-nums; flex: none; }
-  .ev .tag { flex: none; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; }
+  .ev .tag { flex: none; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; }
   .ev .tag.open { color: #3ad1a0; background: rgba(58,209,160,.14); border: 1px solid rgba(58,209,160,.35); }
   .ev .tag.settle { color: #ffb3c8; background: rgba(255,120,160,.14); border: 1px solid rgba(255,120,160,.35); }
   .ev .tag.reset { color: #9fb2c9; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); }
-  .ev .title { font-size: 12.5px; color: #e8eef7; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .ev .cd { font-size: 11px; color: #9fb2c9; flex: none; }
+  .ev .title { font-size: 12px; color: #e8eef7; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .ev .cd { font-size: 10.5px; color: #9fb2c9; flex: none; }
   .footer { margin-top: 16px; text-align: center; font-size: 11px; color: #8a6b86; }
 
   /* ===== bh3-plugin 粉紫主题配色覆盖 ===== */
@@ -130,7 +157,7 @@
       linear-gradient(180deg, #fbd8f0 0%, #eecdf4 42%, #d3b4f0 100%) !important;
     color: #57204a;
   }
-  .card, .sum {
+  .card {
     background: linear-gradient(150deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18)) !important;
     border-color: rgba(214,77,148,0.4) !important;
     box-shadow: 0 6px 20px rgba(160,80,160,0.18) !important;
@@ -139,16 +166,13 @@
   .title, .sec-title, .day-head { color: #8e2f68 !important; }
   .sec-title::after { background: linear-gradient(90deg, rgba(214,77,148,0.5), transparent) !important; }
   .sec-title i { background: #d64d94 !important; }
-  .sub, .sec-title .cnt, .sum .l, .item-time, .days-lab, .item-cd, .day-head .wd, .ev .cd, .empty, .hint, .item-note { color: #7a4a9e !important; }
-  .sum .n, .days { color: #b23ac4 !important; }
-  .days.upcoming { color: #8e35c9 !important; }
-  .days.ended { color: #8a6b86 !important; }
-  .item { background: rgba(255,255,255,0.42) !important; border-color: rgba(214,77,148,0.25) !important; }
-  .item-name { color: #57204a !important; }
-  .item-bar { background: rgba(214,77,148,0.15) !important; }
-  .item-bar span { background: linear-gradient(90deg, #d64d94, #b23ac4) !important; }
-  .item-bar span.upcoming { background: linear-gradient(90deg, #ffb84d, #ffd88a) !important; }
-  .chip.type { color: #8e35c9 !important; background: rgba(142,53,201,0.1) !important; border-color: rgba(142,53,201,0.35) !important; }
+  .range, .summary, .sec-title .cnt, .row .nm, .axis .tick, .outside, .day-head .wd, .ev .cd, .empty, .hint { color: #7a4a9e !important; }
+  .summary b, .axis .tick.today { color: #b23ac4 !important; }
+  .track {
+    background-image: linear-gradient(to right, rgba(214,77,148,.22) 1px, transparent 1px) !important;
+    border-left-color: rgba(214,77,148,.3) !important;
+    border-right-color: rgba(214,77,148,.3) !important;
+  }
   .ev { background: rgba(255,255,255,0.42) !important; border-color: rgba(214,77,148,0.25) !important; }
   .ev .title { color: #57204a !important; }
   .ev .time { color: #8e35c9 !important; }
@@ -163,74 +187,51 @@
 
   <div class="header">
     <div class="wrap">
-      <div class="title">崩坏3 活动日历</div>
-      <div class="sub">未来 {{days}} 天 · 生成于 {{generatedAt}}</div>
+      <div class="top">
+        <div class="title">崩坏3 活动日历</div>
+        <div class="range">{{rangeText}} · 生成于 {{generatedAt}}</div>
+      </div>
+      <div class="summary">
+        <span><b>{{ongoingPools}}</b>进行中卡池</span>
+        <span><b>{{ongoingEvents}}</b>进行中活动</span>
+        {{if endingSoon}}<span>最近结束：{{endingSoon.name}}（{{endingSoon.countdown}}）</span>{{/if}}
+      </div>
     </div>
   </div>
 
-  <!-- 概览 -->
-  <div class="summary">
-    <div class="sum"><div class="n">{{ongoingPools}}</div><div class="l">进行中卡池</div></div>
-    <div class="sum"><div class="n">{{ongoingEvents}}</div><div class="l">进行中活动</div></div>
-    <div class="sum"><div class="n">{{if endingSoon}}{{endingSoon.daysLeft}}{{else}}-{{/if}}</div><div class="l">天后结束</div></div>
-  </div>
-  {{if endingSoon}}
-  <div class="hint" style="margin-top:8px">最近结束：{{endingSoon.name}}（{{endingSoon.countdown}}）</div>
-  {{/if}}
-
-  <!-- 卡池 -->
   <div class="card">
-    <div class="sec-title"><i></i>卡池<span class="cnt">{{pools.length}} 个</span></div>
-    {{if pools.length}}
-    {{each pools p}}
-    <div class="item">
-      <div class="accent {{p.typeClass}}"></div>
-      <div class="body">
-        <div class="row-top">
-          <span class="item-name">{{p.name}}</span>
-          {{if p.type}}<span class="chip type">{{p.type}}</span>{{/if}}
-        </div>
-        <div class="item-time">{{p.startText}} ~ {{p.endText}}</div>
-        {{if p.note}}<div class="item-note">{{p.note}}</div>{{/if}}
-        <div class="item-bar"><span class="{{p.status}}" style="width:{{p.progress}}%"></span></div>
-        <div class="item-cd">{{p.countdown}}</div>
-      </div>
-      <div class="right">
-        <div class="days {{p.status}}">{{p.daysText}}{{if p.daysUnit}}<em>{{p.daysUnit}}</em>{{/if}}</div>
-        <div class="days-lab">{{if p.status === 'ongoing'}}剩余{{else if p.status === 'upcoming'}}待开启{{else}}已结束{{/if}}</div>
-      </div>
-    </div>
-    {{/each}}
-    {{else}}
-    <div class="empty">暂无进行中的卡池公告</div>
-    {{/if}}
-  </div>
+    <div class="sec-title"><i></i>卡池 / 活动<span class="cnt">{{rows.length}} 项</span></div>
 
-  <!-- 活动 -->
-  <div class="card">
-    <div class="sec-title"><i></i>活动<span class="cnt">{{events.length}} 个</span></div>
-    {{if events.length}}
-    {{each events v}}
-    <div class="item">
-      <div class="accent {{v.typeClass}}"></div>
-      <div class="body">
-        <div class="row-top">
-          <span class="item-name">{{v.name}}</span>
-          {{if v.type}}<span class="chip type">{{v.type}}</span>{{/if}}
+    {{if rows.length}}
+    <div class="cal">
+      <div class="axis-row">
+        <div class="axis-spacer"></div>
+        <div class="axis">
+          {{each ticks t}}
+          <div class="tick {{if t.today}}today{{/if}}" style="left:{{t.leftPct}}%">{{t.label}}</div>
+          {{/each}}
         </div>
-        <div class="item-time">{{v.startText}} ~ {{v.endText}}</div>
-        {{if v.note}}<div class="item-note">{{v.note}}</div>{{/if}}
-        <div class="item-bar"><span class="{{v.status}}" style="width:{{v.progress}}%"></span></div>
-        <div class="item-cd">{{v.countdown}}</div>
       </div>
-      <div class="right">
-        <div class="days {{v.status}}">{{v.daysText}}{{if v.daysUnit}}<em>{{v.daysUnit}}</em>{{/if}}</div>
-        <div class="days-lab">{{if v.status === 'ongoing'}}剩余{{else if v.status === 'upcoming'}}待开启{{else}}已结束{{/if}}</div>
+      <div class="rows">
+        {{each rows r}}
+        <div class="row">
+          <div class="lab">
+            <span class="nm">{{r.name}}</span>
+            {{if r.type}}<span class="chip {{r.typeClass}}">{{r.type}}</span>{{/if}}
+          </div>
+          <div class="track">
+            <div class="bar {{r.typeClass}} {{r.status}}" style="left:{{r.leftPct}}%;width:{{r.widthPct}}%">
+              {{if r.wide}}<span class="bl">{{if r.clipLeft}}◀ {{/if}}{{r.inlineLabel}}{{if r.clipRight}} ▶{{/if}}</span>{{/if}}
+            </div>
+            {{if !r.wide}}<span class="outside" style="left:{{r.labelLeftPct}}%">{{r.shortLabel}}</span>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+        <div class="nowline" style="left:calc(192px + (100% - 192px) * {{(nowLeftPct / 100).toFixed(4)}})"></div>
       </div>
     </div>
-    {{/each}}
     {{else}}
-    <div class="empty">暂无进行中的活动公告</div>
+    <div class="empty">暂无进行中的卡池 / 活动</div>
     {{/if}}
     {{if !hasEventData}}
     <div class="hint">
@@ -240,7 +241,6 @@
     {{/if}}
   </div>
 
-  <!-- 周常节点 -->
   <div class="card">
     <div class="sec-title"><i></i>周常节点</div>
     <div class="hint">每日 04:00 日常重置 · 每周一 04:00 周常重置 · 不需要绑定 Cookie</div>
@@ -262,11 +262,11 @@
     </div>
     {{/each}}
     {{else}}
-    <div class="empty">未来 {{days}} 天没有固定节点</div>
+    <div class="empty">未来没有固定节点</div>
     {{/if}}
   </div>
 
-  <div class="footer">周常节点按游戏内固定节奏推算{{if dataSource}} · 卡池/活动来源：{{dataSource}}{{/if}}</div>
+  <div class="footer">卡池 / 活动解析自米游社崩坏3 官方公告{{if dataSource}}（{{dataSource}}）{{/if}} · 周常节点按游戏内固定节奏推算</div>
 </div>
 </body>
 </html>
