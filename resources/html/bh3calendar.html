@@ -242,27 +242,17 @@
   </div>
 
   <div class="card">
-    <div class="sec-title"><i></i>周常节点</div>
-    <div class="hint">每日 04:00 日常重置 · 每周一 04:00 周常重置 · 不需要绑定 Cookie</div>
+    <div class="sec-title"><i></i>周常节点<span class="cnt">最近一期</span></div>
     {{if nextEvent}}
-    <div class="hint" style="margin-top:6px">下一个节点：{{nextEvent.dateText}} {{nextEvent.timeText}} {{nextEvent.title}}（{{nextEvent.countdown}}）</div>
-    {{/if}}
-    {{if groups.length}}
-    {{each groups g}}
-    <div class="day-group">
-      <div class="day-head">{{g.dateText}}<span class="wd">{{g.weekday}}</span></div>
-      {{each g.items e}}
-      <div class="ev">
-        <span class="time">{{e.timeText}}</span>
-        <span class="tag {{if e.tag === '开放'}}open{{else if e.tag === '结算'}}settle{{else}}reset{{/if}}">{{e.tag}}</span>
-        <span class="title">{{e.title}}</span>
-        <span class="cd">{{e.countdown}}</span>
-      </div>
-      {{/each}}
+    <div class="ev" style="margin-top:10px">
+      <span class="time">{{nextEvent.dateText}} {{nextEvent.timeText}}</span>
+      <span class="tag {{if nextEvent.tag === '开放'}}open{{else if nextEvent.tag === '结算'}}settle{{else}}reset{{/if}}">{{nextEvent.tag}}</span>
+      <span class="title">{{nextEvent.title}}</span>
+      <span class="cd">{{nextEvent.countdown}}</span>
     </div>
-    {{/each}}
+    <div class="hint" style="margin-top:8px">每日 04:00 日常重置 · 每周一 04:00 周常重置 · 不需要绑定 Cookie</div>
     {{else}}
-    <div class="empty">未来没有固定节点</div>
+    <div class="empty">暂无周常节点</div>
     {{/if}}
   </div>
 
