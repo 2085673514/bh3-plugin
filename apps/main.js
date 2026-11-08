@@ -22,7 +22,7 @@ import {
 } from '../lib/characters.js'
 import { readCharacterMeta, updateCharacterData } from '../lib/characterUpdater.js'
 import { calculateDamage } from '../lib/damage.js'
-import { buildCalendarEvents } from '../lib/calendar.js'
+import { buildWeeklyPeriods } from '../lib/calendar.js'
 import { loadEventData } from '../lib/calendarData.js'
 import { renderHelpImage } from '../lib/helpImage.js'
 import { renderCardImage } from '../lib/cardImage.js'
@@ -1452,13 +1452,12 @@ export class Bh3Plugin extends plugin {
     })
   }
 
-  /** #崩坏3活动日历 卡池 / 活动（公告解析）+ 周常节点（本地推算，无需 Cookie） */
+  /** #崩坏3活动日历 卡池 / 活动（公告解析）+ 周常最近一期（本地推算，无需 Cookie） */
   async mysCalendar(e) {
     const now = new Date()
-    const weeklyDays = 7
-    const axisDays = 14
+    const axisDays = 21
     const config = readPushConfig()
-    const weeklyEvents = buildCalendarEvents(now, { days: weeklyDays, settleTime: config.settleTime })
+    const weeklyPeriods = buildWeeklyPeriods(now, { settleTime: config.settleTime })
     let calendar = { pools: [], events: [], source: "none", configured: false }
     try {
       calendar = await loadEventData(now)
@@ -1468,7 +1467,7 @@ export class Bh3Plugin extends plugin {
     const data = buildCalendarCard({
       pools: calendar.pools,
       events: calendar.events,
-      weeklyEvents,
+      weeklyPeriods,
       days: axisDays,
       source: calendar.source,
       configured: calendar.configured,

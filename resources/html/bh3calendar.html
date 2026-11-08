@@ -243,14 +243,16 @@
 
   <div class="card">
     <div class="sec-title"><i></i>周常节点<span class="cnt">最近一期</span></div>
-    {{if nextEvent}}
-    <div class="ev" style="margin-top:10px">
-      <span class="time">{{nextEvent.dateText}} {{nextEvent.timeText}}</span>
-      <span class="tag {{if nextEvent.tag === '开放'}}open{{else if nextEvent.tag === '结算'}}settle{{else}}reset{{/if}}">{{nextEvent.tag}}</span>
-      <span class="title">{{nextEvent.title}}</span>
-      <span class="cd">{{nextEvent.countdown}}</span>
+    {{if weeklyPeriods.length}}
+    {{each weeklyPeriods p}}
+    <div class="ev" style="margin-top:8px">
+      <span class="time">{{p.dateText}} {{p.timeText}}</span>
+      <span class="tag {{if p.tag === '结算'}}settle{{else}}reset{{/if}}">{{p.tag}}</span>
+      <span class="title">{{p.name}} · {{p.action}}</span>
+      <span class="cd">{{p.countdown}}</span>
     </div>
-    <div class="hint" style="margin-top:8px">每日 04:00 日常重置 · 每周一 04:00 周常重置 · 不需要绑定 Cookie</div>
+    {{/each}}
+    <div class="hint" style="margin-top:8px">每日 04:00 日常重置 · 每周一 04:00 记忆战场 / 往世乐土重置 · 不需要绑定 Cookie</div>
     {{else}}
     <div class="empty">暂无周常节点</div>
     {{/if}}
