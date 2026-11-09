@@ -28,6 +28,7 @@ import {
   getCalendarSub,
   normalizeCalendarTime,
   removeCalendarSub,
+  rescheduleCalendarSubs,
   saveCalendarSub,
 } from '../lib/calendarSub.js'
 import { loadEventData } from '../lib/calendarData.js'
@@ -1481,6 +1482,7 @@ export class Bh3Plugin extends plugin {
     }
     if (/^(关闭|取消|关|停止)$/.test(text)) {
       const removed = removeCalendarSub(target)
+      if (removed) rescheduleCalendarSubs()
       return e.reply(removed ? '已取消本会话的活动日历订阅。' : '本会话还没有订阅活动日历。', false, { at: true })
     }
     const time = normalizeCalendarTime(text)
@@ -1492,6 +1494,7 @@ export class Bh3Plugin extends plugin {
       if (exist) return e.reply(calendarSubStatus(target), false, { at: true })
     }
     const { time: at, created } = saveCalendarSub(target, { time: time || undefined, by: String(e.user_id || '') })
+    rescheduleCalendarSubs()
     return e.reply(
       [
         created ? '已订阅活动日历：' : '已更新活动日历推送时间：',
