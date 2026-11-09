@@ -3,6 +3,7 @@ import path from 'path'
 import { Bh3Plugin } from './apps/main.js'
 import { scheduleCharacterAutoUpdate } from './lib/characterUpdater.js'
 import { schedulePushReminder } from './lib/push.js'
+import { scheduleCalendarSubs } from './lib/calendarSub.js'
 import { fetchAnnouncements } from './lib/announcement.js'
 
 if (!globalThis.segment) {
@@ -24,6 +25,9 @@ scheduleCharacterAutoUpdate()
 
 // 周常提醒：周日检查 + 深渊结算前 1.5 小时（默认关闭，用 #崩坏3推送 开启）
 schedulePushReminder(globalThis.logger)
+
+// 活动日历订阅：每天到点推送当日日历 + 活动快结束时单独提醒
+scheduleCalendarSubs(globalThis.logger)
 
 // 活动日历数据：启动后预热一次公告缓存，避免第一条 #崩坏3活动日历 等太久
 if (globalThis.__bh3CalendarWarmup !== true) {

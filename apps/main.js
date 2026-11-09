@@ -23,6 +23,13 @@ import {
 import { readCharacterMeta, updateCharacterData } from '../lib/characterUpdater.js'
 import { calculateDamage } from '../lib/damage.js'
 import { buildWeeklyPeriods } from '../lib/calendar.js'
+import {
+  calendarSubStatus,
+  getCalendarSub,
+  normalizeCalendarTime,
+  removeCalendarSub,
+  saveCalendarSub,
+} from '../lib/calendarSub.js'
 import { loadEventData } from '../lib/calendarData.js'
 import { renderHelpImage } from '../lib/helpImage.js'
 import { renderCardImage } from '../lib/cardImage.js'
@@ -251,7 +258,8 @@ function buildHelp() {
     '#崩坏3一周成绩单　　　　一周成绩单（含本地历史）',
     '#崩坏3手帐　　　　　　　水晶手账（需绑定 Cookie）',
     '#崩坏3收集度　　　　　　收集度统计（五★装备/成就/探索/段位/补给卡）',
-    '#崩坏3活动日历　　　　　卡池/活动时间表 + 未来 7 天周常节点（周常部分无需 Cookie）',
+    '#崩坏3活动日历　　　　　卡池/活动时间表 + 周常最近一期（周常部分无需 Cookie）',
+    '#崩坏3订阅日历 [HH:mm]　订阅每天推送当日日历 + 活动结束提醒（默认 08:00）',
     '',
     '【补给 / 道具记录】（米游社自助查询，需逍遥插件 stoken）',
     '#崩坏3更新抽卡记录 / #崩坏3刷新补给记录　更新并保存补给记录',
@@ -335,6 +343,7 @@ export class Bh3Plugin extends plugin {
         { reg: `^${PREFIX}(手帐|手账)(?=$|[\\s\\d])`, fnc: 'mysFinance', log: false },
         { reg: `^${PREFIX}(收集度|收集)(?=$|@|[\\s\\d])`, fnc: 'mysCollect', log: false },
         { reg: `^${PREFIX}(活动日历|日历)(?=$|@|[\\s\\d])`, fnc: 'mysCalendar', log: false },
+        { reg: `^${PREFIX}(订阅日历|日历订阅|日历提醒)(?=$|@|[\\s\\d:：])`, fnc: 'subscribeCalendar', log: false },
         { reg: `^${PREFIX}(更新|刷新)(抽卡|补给)记录`, fnc: 'mysUpdateGacha', log: false },
         { reg: `^${PREFIX}(更新|刷新)道具记录`, fnc: 'mysUpdateMaterial', log: false },
         { reg: `^${PREFIX}(抽卡记录|补给记录)`, fnc: 'mysGacha', log: false },
@@ -1450,6 +1459,49 @@ export class Bh3Plugin extends plugin {
       build: (raw, role) => buildCollectCard(raw, role),
       tpl: 'html/bh3collect',
     })
+  }
+
+  /** #崩坏3订阅日历 [HH:mm|关闭] 订阅每日日历推送 + 活动结束提醒 */
+  async subscribeCalendar(e) {
+    const target = e.isGroup
+      ? { type: 'group', id: String(e.group_id || '') }
+      : { type: 'private', id: String(e.user_id || '') }
+    // 群聊里只允许主人 / 群主 / 管理员改订阅，避免有人给整个群刷提醒
+    if (e.isGroup && !isMaster(e) && !['owner', 'admin'].includes(e.sender?.role)) {
+      return e.reply('只有主人或本群管理员可以设置日历订阅。')
+    }
+    const text = stripMysKeyword(e.msg, '(订阅日历|日历订阅|日历提醒)')
+    if (/[?？]/.test(text)) {
+      return e.reply(
+        '活动日历订阅\n#崩坏3订阅日历　　　　订阅（默认每天 08:00 推送当日日历）\n#崩坏3订阅日历 20:30　指定推送时间\n#崩坏3订阅日历 关闭　取消订阅\n活动 / 卡池结束前 ' +
+          `${Number(process.env.BH3_CAL_ENDING_HOURS) || 24} 小时内会单独提醒一次。`,
+        false,
+        { at: true },
+      )
+    }
+    if (/^(关闭|取消|关|停止)$/.test(text)) {
+      const removed = removeCalendarSub(target)
+      return e.reply(removed ? '已取消本会话的活动日历订阅。' : '本会话还没有订阅活动日历。', false, { at: true })
+    }
+    const time = normalizeCalendarTime(text)
+    if (text && !time) {
+      return e.reply('时间格式不对，示例：#崩坏3订阅日历 08:00', false, { at: true })
+    }
+    if (!text) {
+      const exist = getCalendarSub(target)
+      if (exist) return e.reply(calendarSubStatus(target), false, { at: true })
+    }
+    const { time: at, created } = saveCalendarSub(target, { time: time || undefined, by: String(e.user_id || '') })
+    return e.reply(
+      [
+        created ? '已订阅活动日历：' : '已更新活动日历推送时间：',
+        `每天 ${at} 推送当日日历图（卡池 / 活动 / 周常）`,
+        `活动或卡池结束前 ${Number(process.env.BH3_CAL_ENDING_HOURS) || 24} 小时内单独提醒一次`,
+        '发送 #崩坏3订阅日历 关闭 可取消',
+      ].join('\n'),
+      false,
+      { at: true },
+    )
   }
 
   /** #崩坏3活动日历 卡池 / 活动（公告解析）+ 周常最近一期（本地推算，无需 Cookie） */
