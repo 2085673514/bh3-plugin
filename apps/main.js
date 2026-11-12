@@ -1462,7 +1462,7 @@ export class Bh3Plugin extends plugin {
     })
   }
 
-  /** #崩坏3订阅日历 [HH:mm|关闭] 订阅每日日历推送 + 活动结束提醒 */
+  /** #崩坏3订阅日历 [HH:mm|关闭] 订阅每日日历推送 + 当日开启/结束与深渊结算提醒 */
   async subscribeCalendar(e) {
     const target = e.isGroup
       ? { type: 'group', id: String(e.group_id || '') }
@@ -1475,8 +1475,7 @@ export class Bh3Plugin extends plugin {
     if (/[?？]/.test(text)) {
       return e.reply(
         '活动日历订阅\n#崩坏3订阅日历　　　　订阅（默认每天 08:00 推送当日日历）\n#崩坏3订阅日历 20:30　指定推送时间\n#崩坏3订阅日历 关闭　取消订阅\n' +
-          '推送日历后，当天有卡池 / 活动开启或结束会补一条提醒；深渊结算日会提示「今晚深渊结算」。\n' +
-          `活动 / 卡池结束前 ${Number(process.env.BH3_CAL_ENDING_HOURS) || 24} 小时内会单独提醒一次。`,
+          '推送日历后，当天有卡池 / 活动开启或结束会补一条提醒；深渊结算日会提示「今晚深渊结算」。',
         false,
         { at: true },
       )
@@ -1500,7 +1499,7 @@ export class Bh3Plugin extends plugin {
       [
         created ? '已订阅活动日历：' : '已更新活动日历推送时间：',
         `每天 ${at} 推送当日日历图（卡池 / 活动 / 周常）`,
-        `活动或卡池结束前 ${Number(process.env.BH3_CAL_ENDING_HOURS) || 24} 小时内单独提醒一次`,
+        '当天有活动开启 / 结束或深渊结算时，会再补一条文字提醒',
         '发送 #崩坏3订阅日历 关闭 可取消',
       ].join('\n'),
       false,
