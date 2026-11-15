@@ -5,6 +5,7 @@ import { scheduleCharacterAutoUpdate } from './lib/characterUpdater.js'
 import { schedulePushReminder } from './lib/push.js'
 import { scheduleCalendarSubs } from './lib/calendarSub.js'
 import { fetchAnnouncements } from './lib/announcement.js'
+import { attachFileLog } from './lib/log.js'
 
 if (!globalThis.segment) {
   const oicq = await import('oicq')
@@ -15,6 +16,9 @@ const dataDir = path.join(process.cwd(), 'data', 'bh3')
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true })
 }
+
+// [bh3] 日志额外落盘到 data/bh3/bh3.log，Bot 由 cmd 新窗口拉起时也能事后排查
+attachFileLog(globalThis.logger)
 
 if (globalThis.logger?.info) {
   globalThis.logger.info('崩坏3查询插件加载中...')
