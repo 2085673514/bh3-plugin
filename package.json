@@ -16,6 +16,7 @@
     "sqlite3": "^5.1.7"
   },
   "scripts": {
-    "update:data": "node ./scripts/build-characters.mjs"
+    "update:data": "node ./scripts/build-characters.mjs",
+    "update:equipment": "node ./scripts/update-equipment-data.mjs"
   }
 }
