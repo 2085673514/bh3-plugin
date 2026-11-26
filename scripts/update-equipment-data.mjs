@@ -21,12 +21,16 @@ const ICONS_FILE = path.join(RES_DIR, 'bh3_icons.json')
 const WIKI_BASE = 'https://api-takumi-static.mihoyo.com/common/blackboard/bh3_wiki'
 const GAP_MS = 250
 
-/** 图鉴频道：18 女武神 / 19 圣痕 / 20 武器 / 36 协同者（用于识别协同补给出货） */
+/**
+ * 图鉴频道：18 女武神 / 19 圣痕 / 20 武器。
+ * 协同者（icons.synergy）不在这里同步：图鉴没有独立的协同者目录，
+ * channel 36 是「角色」大杂烩（NPC 和协同者混在一起），照着同步会把 NPC 当成协同者。
+ * 新协同者请手动往 resources/bh3_icons.json 的 synergy 里加一条。
+ */
 const CHANNELS = [
   { id: 18, group: 'characters', label: '女武神' },
   { id: 19, group: 'stigmata', label: '圣痕' },
   { id: 20, group: 'weapons', label: '武器' },
-  { id: 36, group: 'synergy', label: '协同者', iconOnly: true },
 ]
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
